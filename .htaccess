@@ -1,0 +1,34 @@
+# .htaccess — for the folder the game is installed in (e.g. public_html/baseball).
+#
+# Tell search engines not to index or follow ANYTHING in this folder: the
+# pages, the JSON API, the CSS/JS. This is a private game living on a company
+# website, so it shouldn't show up in Google.
+#
+# Why a header instead of robots.txt: robots.txt lives at the site root (it
+# belongs to the company site, not this game), and "Disallow" only stops
+# crawling, not indexing — a blocked URL can still appear in results if
+# something links to it. The X-Robots-Tag header says "don't index" outright.
+# index.html and admin.html also carry a <meta name="robots"> tag as backup.
+<IfModule mod_headers.c>
+    Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
+# Make browsers re-check CSS/JS with the server on every page load.
+#
+# Why: Namecheap's default tells browsers to keep .css/.js for 8 days without
+# asking again, so after an update people kept running the OLD scripts
+# against the NEW pages. "no-cache" doesn't mean "download every time": the
+# browser asks "changed since last time?" and an unchanged file comes back as
+# a tiny "304 Not Modified". The ?v= tags in the HTML are the other half of
+# the fix (they cover browsers still holding a copy from before this rule).
+<IfModule mod_expires.c>
+    <FilesMatch "\.(css|js)$">
+        ExpiresActive Off
+    </FilesMatch>
+</IfModule>
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js)$">
+        Header unset Expires
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

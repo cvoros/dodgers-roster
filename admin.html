@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+  admin.html — admin page. Open as admin.html?key=<ADMIN_KEY>.
+
+  This file is public and harmless on its own: every admin API call sends
+  the key from the URL, and the server rejects wrong keys (see api/admin.php).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Keep the secret URL out of search engines and referrer headers -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>NLDS Roster Admin</title>
+  <!-- ?v= is a cache-buster: the host tells browsers to keep CSS/JS for
+       days, so change it on every deploy that touches css/ or js/ (all
+       tags, both pages) and browsers fetch the new files immediately. -->
+  <link rel="stylesheet" href="css/style.css?v=2026-09-23">
+</head>
+<body>
+  <header class="site-header">
+    <h1>NLDS Roster Admin</h1>
+    <p id="admin-status" class="lock-banner"></p>
+  </header>
+
+  <main>
+    <p id="auth-error" class="error card" hidden></p>
+
+    <div id="admin-main" hidden>
+      <!-- Scoreboard (once actual roster saved) or plain entry list -->
+      <section class="card">
+        <h2 id="entries-heading">Entries</h2>
+        <div id="entries"></div>
+      </section>
+
+      <!-- Tie-breaker result: total runs (both teams) in NLDS Game 1 -->
+      <section class="card">
+        <h2>Game 1 total runs</h2>
+        <p id="runs-status" class="muted small"></p>
+        <div class="admin-actions">
+          <input id="admin-runs-input" class="runs-input" type="number" inputmode="numeric" pattern="[0-9]*"
+                 min="0" max="99" step="1" placeholder="e.g. 7" aria-label="Game 1 total runs">
+          <button id="save-runs" type="button" class="btn primary">Save runs</button>
+          <button id="clear-runs" type="button" class="btn">Clear</button>
+        </div>
+        <p id="runs-message" class="small" role="status"></p>
+      </section>
+
+      <!-- Enter the actual 26-man roster with the same picker players use -->
+      <section class="card">
+        <h2>Actual NLDS roster</h2>
+        <p id="actual-status" class="muted small"></p>
+        <div class="admin-actions">
+          <button id="pull-mlb" type="button" class="btn">Pull from MLB (active roster)</button>
+          <button id="save-actual" type="button" class="btn primary" disabled>Save actual roster</button>
+        </div>
+        <p id="actual-message" class="small" role="status"></p>
+
+        <div class="picker-layout">
+          <aside class="roster-panel open">
+            <div class="roster-bar">
+              <div id="pick-count" class="pick-count" aria-live="polite"></div>
+            </div>
+            <p id="pick-message" class="pick-message" aria-live="polite"></p>
+            <div id="slots" class="slots"></div>
+          </aside>
+          <div id="pool" class="pool"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/common.js?v=2026-09-23"></script>
+  <script src="js/admin.js?v=2026-09-23"></script>
+</body>
+</html>

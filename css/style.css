@@ -1,0 +1,362 @@
+/*
+ * style.css — all styles for index.html and admin.html.
+ *
+ * Mobile first: the base rules target phones (~375px wide). The
+ * @media (min-width: 700px) block further down switches the picker to the
+ * side-by-side desktop layout (pool left, roster right).
+ *
+ * Colors live in custom properties on :root so the dark-mode block only has
+ * to redefine them.
+ */
+
+:root {
+  --dodger-blue: #005a9c;
+  --dodger-blue-dark: #00437a;
+  --red: #ef3e42;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --text: #1a1d21;
+  --muted: #5f6b7a;
+  --border: #d5dbe3;
+  --picked-bg: #e3eef8;
+  --rank: var(--dodger-blue);
+  --hit: #1a7f37;
+  --miss: #b42318;
+  --radius: 10px;
+  --tap: 44px;              /* minimum comfortable tap target */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1419;
+    --surface: #1a2029;
+    --text: #e7ebf0;
+    --muted: #93a1b3;
+    --border: #2e3846;
+    --picked-bg: #173250;
+    --rank: #6cb4ff;
+    --hit: #4ac26b;
+    --miss: #ff7b72;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;          /* 16px+ stops iOS zooming into inputs */
+  line-height: 1.45;
+  background: var(--bg);
+  color: var(--text);
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px 16px 48px;
+}
+
+h1, h2, h3, h4 { line-height: 1.2; }
+h2 { font-size: 1.25rem; margin: 0 0 12px; }
+h3 { font-size: 1rem; margin: 16px 0 8px; }
+h4 { font-size: 0.9rem; margin: 12px 0 4px; color: var(--muted); }
+
+[hidden] { display: none !important; }
+
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+.error { color: var(--miss); min-height: 1em; }
+
+/* ---------- Header ---------- */
+
+.site-header {
+  background: var(--dodger-blue);
+  color: #fff;
+  padding: 14px 16px;
+  text-align: center;
+}
+.site-header h1 { margin: 0; font-size: 1.3rem; }
+.lock-banner { margin: 4px 0 0; font-size: 0.9rem; opacity: 0.9; }
+.lock-banner.closed { font-weight: 600; }
+
+/* ---------- Cards, buttons, inputs ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.btn {
+  min-height: var(--tap);
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+.btn.danger { color: var(--miss); border-color: var(--miss); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.small-btn { min-height: 36px; margin-top: 12px; font-size: 0.875rem; }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--dodger-blue);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+}
+@media (prefers-color-scheme: dark) {
+  .link-btn { color: #6cb4ff; }
+}
+
+label { display: block; font-weight: 600; margin-bottom: 6px; }
+input[type="text"] {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+/* ---------- Rules ---------- */
+
+.rules ol { padding-left: 20px; margin: 0 0 8px; }
+.rules p { margin: 0; }
+
+.picking-as { margin: 0 0 8px; }
+
+/* ---------- Picker: mobile layout (stacked) ---------- */
+
+.picker-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* On phones the roster panel sticks to the top of the screen so the count
+   and Play Ball button are always visible while scrolling the pool. */
+.roster-panel {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.roster-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pick-count { font-weight: 700; font-size: 1.05rem; }
+.pick-count.complete { color: var(--hit); }
+.tiebreak { font-size: 0.85rem; color: var(--muted); }
+
+/* Runs-guess box above the picker. Narrow input: it's a 1–2 digit number. */
+.tiebreak-card { padding: 12px 16px; margin-bottom: 12px; }
+.tiebreak-card input[type="number"],
+.runs-input {
+  width: 7em;
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.tiebreak-card .error { margin: 6px 0 0; }
+/* Draw attention when Play Ball is pressed without a guess. */
+.tiebreak-card.needs-attention { border-color: var(--red); box-shadow: 0 0 0 2px rgba(239, 62, 66, 0.35); }
+
+/* "Roster full" nudge when tapping a player with 26 picked. */
+.pick-count.flash { animation: flash 0.6s ease 2; }
+@keyframes flash {
+  50% { color: var(--red); transform: scale(1.08); }
+}
+
+/* Slots are collapsed on phones until "Show my roster" is tapped, and scroll
+   inside the panel so the sticky bar can't swallow the whole screen. */
+.slots { display: none; }
+.roster-panel.open .slots {
+  display: block;
+  max-height: 55vh;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+.toggle-slots { margin-top: 4px; font-size: 0.9rem; }
+
+.slot-list, .pool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slot, .pool-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.slot .label, .pool-player .label { flex: 1; }
+
+.slot.filled { background: var(--picked-bg); }
+.slot-num { width: 1.5em; color: var(--muted); font-size: 0.85rem; }
+.slot .remove { color: var(--muted); font-size: 1.2rem; }
+.slot.open {
+  border-style: dashed;
+  color: var(--muted);
+  cursor: default;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+.slots-left { margin: 10px 0 0; font-size: 0.85rem; color: var(--muted); }
+
+/* A picked player stays in the pool, dimmed with a check, so the list
+   doesn't jump around as you pick. */
+.pool-player.picked {
+  background: var(--picked-bg);
+  color: var(--muted);
+}
+.pool-player.picked .label::before { content: "✓ "; color: var(--hit); }
+
+/* Can't be added right now (26 picked, or 13 pitchers). Faded but still
+   tappable, so the tap can explain why in .pick-message. */
+.pool-player.blocked { opacity: 0.45; }
+
+/* Short "why that tap didn't work" note under the count. Empty = no space. */
+.pick-message { margin: 0; font-size: 0.85rem; color: var(--miss); }
+.pick-message:not(:empty) { margin-top: 6px; }
+
+.status-tag {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(239, 62, 66, 0.12);
+  color: var(--miss);
+  white-space: nowrap;
+}
+
+.pool-group h3:first-child { margin-top: 0; }
+
+/* ---------- Picker: desktop layout (side by side) ---------- */
+
+@media (min-width: 700px) {
+  .picker-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;   /* pool left, roster right */
+    align-items: start;
+    gap: 20px;
+  }
+  .pool { grid-column: 1; grid-row: 1; }
+  .roster-panel {
+    grid-column: 2;
+    grid-row: 1;
+    top: 12px;                        /* stays in view beside a long pool */
+  }
+  /* Slots always visible on desktop; no toggle needed. */
+  .slots, .roster-panel.open .slots {
+    display: block;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+  .toggle-slots { display: none; }
+}
+
+/* ---------- Confirm dialog ---------- */
+
+.confirm-dialog {
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  border: none;
+  border-radius: var(--radius);
+  padding: 18px;
+  background: var(--surface);
+  color: var(--text);
+}
+.confirm-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+.confirm-dialog h2 { margin-bottom: 4px; }
+.dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  position: sticky;
+  bottom: -18px;                       /* keep buttons visible while scrolling */
+  background: var(--surface);
+  padding: 10px 0;
+}
+
+/* ---------- Roster lists, entries, scoreboard ---------- */
+
+.roster-lists ul { list-style: none; margin: 0; padding: 0; }
+.roster-lists li { padding: 3px 0; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+.roster-lists li:last-child { border-bottom: none; }
+.roster-lists li.hit .mark { color: var(--hit); }
+.roster-lists li.miss { color: var(--muted); }
+.roster-lists li.miss .mark { color: var(--miss); }
+.mark { display: inline-block; width: 1.4em; font-weight: 700; }
+
+@media (min-width: 700px) {
+  .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+}
+
+.entry-list, .scoreboard { display: flex; flex-direction: column; gap: 8px; }
+.scoreboard { list-style: none; padding: 0; margin: 0; }
+
+.entry {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 14px;
+}
+.entry[open] { padding-bottom: 12px; }
+.entry summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-height: var(--tap);
+  padding: 10px 0;
+  cursor: pointer;
+}
+.entry-name { font-weight: 700; flex: 1; }
+.entry-meta { font-size: 0.85rem; color: var(--muted); }
+.rank { font-weight: 700; color: var(--rank); min-width: 2em; }
+.score { font-weight: 700; }
+.missed ul { margin: 0; padding-left: 20px; font-size: 0.92rem; }
+
+.actual summary { cursor: pointer; font-weight: 600; }
+.actual { margin-top: 16px; }
+
+/* ---------- Admin ---------- */
+
+.admin-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }

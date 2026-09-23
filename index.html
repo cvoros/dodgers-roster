@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--
+  index.html — the player page.
+
+  One page, several "screens" (sections); app.js shows exactly one at a time:
+    loading → name → pick → done         (before lock)
+    results                               (after lock)
+  The confirm modal is a native <dialog>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Private game on a company domain: keep it out of search results.
+       (The .htaccess in this folder sends the same instruction as a header.) -->
+  <meta name="robots" content="noindex, nofollow">
+  <title>NLDS Roster Challenge</title>
+  <!-- ?v= is a cache-buster: the host tells browsers to keep CSS/JS for
+       days, so change it on every deploy that touches css/ or js/ (all
+       tags, both pages) and browsers fetch the new files immediately. -->
+  <link rel="stylesheet" href="css/style.css?v=2026-09-23">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Dodgers NLDS Roster Challenge</h1>
+    <!-- Lock countdown / "closed" notice, filled in by app.js -->
+    <p id="lock-banner" class="lock-banner"></p>
+  </header>
+
+  <main>
+    <!-- Shown while the roster and game state load -->
+    <section id="screen-loading" class="screen">
+      <p class="muted">Loading the 40-man roster…</p>
+    </section>
+
+    <!-- Any fatal error (e.g. MLB unreachable and no cache) -->
+    <section id="screen-error" class="screen" hidden>
+      <p id="fatal-error" class="error"></p>
+      <button type="button" class="btn" onclick="location.reload()">Try again</button>
+    </section>
+
+    <!-- Short instructions + scoring rules, shown before lock (SPEC §4.2) -->
+    <section id="rules" class="card rules" hidden>
+      <h2>How to play</h2>
+      <ol>
+        <li>Pick the <strong>26 players</strong> you think make the Dodgers' NLDS roster.</li>
+        <li>Tap a player to add them. Tap a roster slot to take them off.</li>
+        <li>MLB rule: <strong>no more than 13 pitchers</strong>. Shohei Ohtani is a two-way player
+          (<strong>TWP</strong>), so he counts as a position player, not a pitcher.</li>
+        <li>Guess the <strong>total runs scored in Game 1</strong> (both teams combined) as a tie-breaker.</li>
+        <li>Press <strong>Play Ball</strong> when you have 26. <strong>Entries are final</strong> once confirmed.</li>
+      </ol>
+      <h3>Scoring</h3>
+      <p>1 point for each player you get right. Ties go to whoever is closest on
+        <strong>Game 1 total runs</strong> (over or under), then to whoever <strong>entered first</strong>.
+        Everyone's picks are revealed when entries lock.</p>
+    </section>
+
+    <!-- Step 1: choose a unique name -->
+    <section id="screen-name" class="screen card" hidden>
+      <form id="name-form" novalidate>
+        <label for="name-input">Your name</label>
+        <input id="name-input" name="name" type="text" maxlength="30" autocomplete="nickname"
+               placeholder="e.g. Chris V" required>
+        <p id="name-error" class="error" role="alert"></p>
+        <button id="name-continue" type="submit" class="btn primary">Continue</button>
+      </form>
+      <p id="entrant-list" class="muted small"></p>
+    </section>
+
+    <!-- Step 2: build the roster -->
+    <section id="screen-pick" class="screen" hidden>
+      <p class="picking-as">Picking as <strong id="picking-name"></strong>
+        <button id="change-name" type="button" class="link-btn">change</button></p>
+
+      <!-- Tie-breaker guess (SPEC §4.4). Required before Play Ball. -->
+      <div id="tiebreak-card" class="card tiebreak-card">
+        <label for="runs-input">Tie-breaker: total runs in Game 1 (both teams)</label>
+        <input id="runs-input" type="number" inputmode="numeric" pattern="[0-9]*"
+               min="0" max="99" step="1" placeholder="e.g. 8">
+        <p id="runs-error" class="error small" role="alert"></p>
+      </div>
+
+      <div class="picker-layout">
+        <!-- Right on desktop, sticky top bar on mobile -->
+        <aside class="roster-panel">
+          <div class="roster-bar">
+            <div>
+              <div id="pick-count" class="pick-count" aria-live="polite"></div>
+              <!-- Echo of the runs guess, so it's visible from the sticky bar -->
+              <div class="tiebreak">Game 1 runs guess: <strong id="tiebreak-value">–</strong></div>
+            </div>
+            <button id="play-ball" type="button" class="btn primary" disabled>Play Ball</button>
+          </div>
+          <!-- "Max 13 pitchers" / "Roster full" when a tap is refused -->
+          <p id="pick-message" class="pick-message" aria-live="polite"></p>
+          <button id="toggle-slots" type="button" class="link-btn toggle-slots" aria-expanded="false">Show my roster ▾</button>
+          <div id="slots" class="slots"></div>
+        </aside>
+
+        <!-- Left on desktop -->
+        <div id="pool" class="pool"></div>
+      </div>
+      <p id="roster-note" class="muted small"></p>
+    </section>
+
+    <!-- Step 3: submitted -->
+    <section id="screen-done" class="screen card" hidden>
+      <h2>You're in, <span id="done-name"></span>! ⚾</h2>
+      <p class="muted">Your roster is locked in. Everyone's picks are revealed when entries close.</p>
+      <div id="done-roster"></div>
+    </section>
+
+    <!-- After lock: all entries, and the scoreboard once the real roster is in -->
+    <section id="screen-results" class="screen" hidden>
+      <div id="results"></div>
+    </section>
+  </main>
+
+  <!-- Final confirmation (SPEC §4.5) -->
+  <dialog id="confirm-dialog" class="confirm-dialog">
+    <h2>Are you sure this is your final roster?</h2>
+    <p class="muted small">You can't change it after this.</p>
+    <div id="confirm-roster"></div>
+    <p id="confirm-error" class="error" role="alert"></p>
+    <div class="dialog-actions">
+      <button id="confirm-back" type="button" class="btn">Go back</button>
+      <button id="confirm-submit" type="button" class="btn primary">Lock it in</button>
+    </div>
+  </dialog>
+
+  <script src="js/common.js?v=2026-09-23"></script>
+  <script src="js/app.js?v=2026-09-23"></script>
+</body>
+</html>

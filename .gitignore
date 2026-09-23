@@ -1,0 +1,15 @@
+# Real secrets — never commit. Copy api/config.example.php to api/config.php.
+api/config.php
+
+# Runtime data (entries, roster cache). Only the access-blocking .htaccess is tracked.
+data/*
+!data/.htaccess
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Machine-specific local dev server config (absolute Windows paths).
+.claude/launch.json
