@@ -48,6 +48,9 @@ entries are scored and ranked.
   Players, displayed `Shohei Ohtani TWP, L`. The admin picker uses the same
   rule, so the pitcher-count tie-breaker is consistent on both sides.
 - Lists are sorted alphabetically by last name within each group.
+- Non-active players (e.g. "Injured 60-Day", "Reassigned to Minors") carry a
+  small status tag in the pool. It's shown for information only, and they can
+  still be picked.
 
 ## 4. Player flow (`index.html`)
 

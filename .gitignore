@@ -10,3 +10,6 @@ data/*
 Thumbs.db
 .vscode/
 .idea/
+
+# Machine-specific local dev server config (absolute Windows paths).
+.claude/launch.json

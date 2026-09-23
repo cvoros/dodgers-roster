@@ -73,5 +73,12 @@ data/               runtime data — gitignored except data/.htaccess
 - No test framework. Verify by running `php -S localhost:8000` from the repo
   root and exercising the flow in the browser (desktop and 375px mobile
   width), plus `php -l` on every changed PHP file.
+- On Chris's Windows machine PHP 8.3 comes from winget and has no php.ini:
+  use the `php-dev` config in `.claude/launch.json`, which enables
+  curl/openssl/mbstring and points curl at Git's CA bundle. Never turn off
+  SSL verification in code to work around this.
+- `php -S` handles one request at a time on Windows and ignores `.htaccess`,
+  so concurrency and data-folder protection can only really be checked on the
+  host.
 - To test the lock, temporarily set `LOCK_AT` in your local `config.php` to a
   past time — never change `config.example.php` for this.
