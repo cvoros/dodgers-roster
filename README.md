@@ -34,7 +34,7 @@ Apache host.
    minimum), with the `curl` and `mbstring` extensions ticked.
 2. **Upload the site files** with File Manager or FTP to a folder under
    `public_html`, e.g. `public_html/nlds/`: `index.html`, `admin.html`,
-   `css/`, `js/`, `api/`, and the hidden `.htaccess` (keeps the game out of
+   `css/`, `js/`, `img/`, `api/`, and the hidden `.htaccess` (keeps the game out of
    search engines). Upload `data/.htaccess` too if you keep the data folder
    inside the site.
 3. **Create the real config.** Copy `api/config.example.php` to

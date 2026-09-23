@@ -1,50 +1,73 @@
 /*
  * style.css — all styles for index.html and admin.html.
  *
- * Mobile first: the base rules target phones (~375px wide). The
- * @media (min-width: 700px) block further down switches the picker to the
- * side-by-side desktop layout (pool left, roster right).
+ * Look and feel follows Chris's delayDay app (github.com/cvoros/delayDay):
+ * near-black navy page, quiet 1px-bordered cards, small UPPERCASE monospace
+ * section labels, monospace for numbers/counts/times, and color only where
+ * it means something (green = right/complete, red = wrong/warning).
  *
- * Colors live in custom properties on :root so the dark-mode block only has
- * to redefine them.
+ * Deliberate differences from delayDay, because this game is played by
+ * non-technical friends on phones (SPEC §4.9):
+ *   - 16px text for names, buttons and inputs (delayDay uses 11–14px). Below
+ *     16px, iPhones zoom the page when a text box is tapped.
+ *   - 44px minimum tap targets (delayDay's buttons are ~30px).
+ *   - Anything people need to READ uses --muted; the very dim --dim gray is
+ *     for decoration only (it's too low-contrast for information).
+ *   - One filled button per screen (Continue / Play Ball / Lock it in) so the
+ *     next step is obvious; everything else is outlined like delayDay.
+ *   - Dodger-blue accent (wordmark, stripe, primary button) instead of red.
+ *
+ * Fonts are the devices' own, no downloads: the closest built-ins to
+ * delayDay's IBM Plex Sans / IBM Plex Mono (see --sans / --mono).
+ *
+ * ALWAYS dark for every visitor (no light theme, no prefers-color-scheme).
+ * Mobile first: base rules target ~375px phones; the min-width: 700px blocks
+ * switch the picker to side-by-side (pool left, roster right).
  */
 
 :root {
-  --dodger-blue: #005a9c;
-  --dodger-blue-dark: #00437a;
-  --red: #ef3e42;
-  --bg: #f4f6f9;
-  --surface: #ffffff;
-  --text: #1a1d21;
-  --muted: #5f6b7a;
-  --border: #d5dbe3;
-  --picked-bg: #e3eef8;
-  --rank: var(--dodger-blue);
-  --hit: #1a7f37;
-  --miss: #b42318;
+  /* Browser-drawn parts (number spinners, scrollbars, <dialog> backdrop,
+     autofill) are drawn dark too. The HTML <meta name="color-scheme"> says
+     the same so it applies before this file loads. */
+  color-scheme: dark;
+
+  /* delayDay palette */
+  --bg: #0c0f17;            /* page */
+  --surface: #141820;       /* cards, rows */
+  --surface2: #1c2130;      /* hover / picked */
+  --border: #2a3040;
+  --border2: #3a4458;       /* hover border */
+  --text: #e2e8f0;
+  --muted: #8892a4;         /* secondary text people need to read */
+  --dim: #4a5568;           /* decoration only: too faint for information */
+  --green: #4ade80;
+  --red: #f87171;
+  --amber: #f59e0b;
+  --blue: #60a5fa;
+
+  /* Dodgers accent: brightened from #005A9C so it's readable on near-black */
+  --dodger: #005a9c;
+  --dodger-bright: #4d9de0;
+  --primary-bg: #1f6fc0;    /* filled button; white text passes contrast */
+  --primary-hover: #2a7fd4;
+
+  /* Built-in stand-ins for IBM Plex Sans / Plex Mono.
+     Sans: San Francisco (iPhone/Mac), Segoe UI (Windows), Roboto (Android).
+     Mono: SF Mono (Apple, via ui-monospace), Cascadia Mono (Windows 11),
+     Consolas (older Windows), Roboto Mono / Droid Sans Mono (Android). */
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Consolas, "Roboto Mono", "Droid Sans Mono", Menlo, monospace;
+
   --radius: 10px;
   --tap: 44px;              /* minimum comfortable tap target */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f1419;
-    --surface: #1a2029;
-    --text: #e7ebf0;
-    --muted: #93a1b3;
-    --border: #2e3846;
-    --picked-bg: #173250;
-    --rank: #6cb4ff;
-    --hit: #4ac26b;
-    --miss: #ff7b72;
-  }
-}
-
 * { box-sizing: border-box; }
+button { touch-action: manipulation; }   /* no double-tap-zoom delay on phones */
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--sans);
   font-size: 16px;          /* 16px+ stops iOS zooming into inputs */
   line-height: 1.45;
   background: var(--bg);
@@ -54,31 +77,58 @@ body {
 main {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 12px 16px 48px;
+  padding: 8px 16px 48px;
 }
 
-h1, h2, h3, h4 { line-height: 1.2; }
-h2 { font-size: 1.25rem; margin: 0 0 12px; }
-h3 { font-size: 1rem; margin: 16px 0 8px; }
-h4 { font-size: 0.9rem; margin: 12px 0 4px; color: var(--muted); }
+h1, h2, h3, h4 { line-height: 1.25; font-weight: 600; }
+h2 { font-size: 1.15rem; margin: 0 0 12px; }
+
+/* Section labels, delayDay style: small uppercase monospace. Used for the
+   group headings in the picker and roster lists. --muted, not --dim,
+   because they carry information ("max 13 on roster"). */
+h3, h4 {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 16px 0 8px;
+}
 
 [hidden] { display: none !important; }
 
 .muted { color: var(--muted); }
 .small { font-size: 0.875rem; }
-.error { color: var(--miss); min-height: 1em; }
+.error { color: var(--red); min-height: 1em; }
 
-/* ---------- Header ---------- */
+/* ---------- Header: delayDay-style wordmark ---------- */
 
 .site-header {
-  background: var(--dodger-blue);
-  color: #fff;
-  padding: 14px 16px;
-  text-align: center;
+  /* Slim Dodger-blue stripe keeps the team feel without a heavy bar. */
+  border-top: 4px solid var(--dodger);
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 22px 16px 10px;
 }
-.site-header h1 { margin: 0; font-size: 1.3rem; }
-.lock-banner { margin: 4px 0 0; font-size: 0.9rem; opacity: 0.9; }
-.lock-banner.closed { font-weight: 600; }
+.logo {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+.logo span { color: var(--dodger-bright); }
+.logo small { font-size: 13px; font-weight: 400; color: var(--muted); letter-spacing: 0; margin-left: 6px; }
+.tagline { font-size: 14px; color: var(--muted); margin: 2px 0 0; }
+.lock-banner {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+.lock-banner.closed { color: var(--amber); }
 
 /* ---------- Cards, buttons, inputs ---------- */
 
@@ -90,53 +140,67 @@ h4 { font-size: 0.9rem; margin: 12px 0 4px; color: var(--muted); }
   margin-bottom: 16px;
 }
 
+/* Outlined by default, like delayDay's buttons, but full tap height. */
 .btn {
   min-height: var(--tap);
   padding: 0 18px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+  border-radius: 8px;
+  background: transparent;
   color: var(--text);
   font: inherit;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
 }
-.btn.primary { background: var(--red); border-color: var(--red); color: #fff; }
-.btn.danger { color: var(--miss); border-color: var(--miss); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn:hover { border-color: var(--border2); background: var(--surface2); }
+/* The one obvious "next step" button on each screen. */
+.btn.primary { background: var(--primary-bg); border-color: var(--primary-bg); color: #fff; }
+.btn.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.btn.danger { color: var(--red); border-color: rgba(248, 113, 113, 0.5); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:disabled:hover { background: inherit; }
+.btn.primary:disabled:hover { background: var(--primary-bg); }
 .small-btn { min-height: 36px; margin-top: 12px; font-size: 0.875rem; }
 
 .link-btn {
   background: none;
   border: none;
-  color: var(--dodger-blue);
+  color: var(--muted);
   font: inherit;
   text-decoration: underline;
   cursor: pointer;
   padding: 4px;
 }
-@media (prefers-color-scheme: dark) {
-  .link-btn { color: #6cb4ff; }
-}
+.link-btn:hover { color: var(--text); }
 
-label { display: block; font-weight: 600; margin-bottom: 6px; }
-input[type="text"] {
-  width: 100%;
+label { display: block; font-weight: 500; margin-bottom: 6px; }
+input[type="text"],
+input[type="number"] {
   min-height: var(--tap);
   padding: 8px 12px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 8px;
   background: var(--bg);
   color: var(--text);
-  font: inherit;
+  font: inherit;           /* keeps 16px: no iPhone zoom on focus */
 }
+input[type="text"] { width: 100%; }
+input:focus { outline: none; border-color: var(--dodger-bright); }
+/* Between --dim and --muted: placeholders are hints people read, so not the
+   decoration-only --dim, but lighter than real text so they don't look filled. */
+input::placeholder { color: #6b7488; }
 
 /* ---------- Rules ---------- */
 
+.rules h2 { font-size: 1.05rem; }
 .rules ol { padding-left: 20px; margin: 0 0 8px; }
+.rules li { margin-bottom: 2px; }
 .rules p { margin: 0; }
+.rules strong { font-weight: 600; }
 
-.picking-as { margin: 0 0 8px; }
+.picking-as { margin: 0 0 8px; color: var(--muted); }
+.picking-as strong { color: var(--text); font-weight: 600; }
 
 /* ---------- Picker: mobile layout (stacked) ---------- */
 
@@ -156,7 +220,7 @@ input[type="text"] {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 10px 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);   /* separates it from rows scrolling under */
 }
 
 .roster-bar {
@@ -166,28 +230,21 @@ input[type="text"] {
   gap: 12px;
 }
 
-.pick-count { font-weight: 700; font-size: 1.05rem; }
-.pick-count.complete { color: var(--hit); }
-.tiebreak { font-size: 0.85rem; color: var(--muted); }
+/* "13 P / 13 POS · 26 / 26" — numbers read best in mono. */
+.pick-count { font-family: var(--mono); font-weight: 600; font-size: 1rem; }
+.pick-count.complete { color: var(--green); }
+.tiebreak { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 2px; }
+.tiebreak strong { color: var(--text); }
 
 /* Runs-guess box above the picker. Narrow input: it's a 1–2 digit number. */
 .tiebreak-card { padding: 12px 16px; margin-bottom: 12px; }
 .tiebreak-card input[type="number"],
-.runs-input {
-  width: 7em;
-  min-height: var(--tap);
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-}
+.runs-input { width: 7em; font-family: var(--mono); }
 .tiebreak-card .error { margin: 6px 0 0; }
 /* Draw attention when Play Ball is pressed without a guess. */
-.tiebreak-card.needs-attention { border-color: var(--red); box-shadow: 0 0 0 2px rgba(239, 62, 66, 0.35); }
+.tiebreak-card.needs-attention { border-color: var(--red); box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.25); }
 
-/* "Roster full" nudge when tapping a player with 26 picked. */
+/* Count nudge when a tap is refused (roster full / pitcher limit). */
 .pick-count.flash { animation: flash 0.6s ease 2; }
 @keyframes flash {
   50% { color: var(--red); transform: scale(1.08); }
@@ -210,6 +267,7 @@ input[type="text"] {
   gap: 6px;
 }
 
+/* Pool players and roster slots: delayDay game-card rows, 44px tall. */
 .slot, .pool-player {
   display: flex;
   align-items: center;
@@ -224,47 +282,50 @@ input[type="text"] {
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
 }
+.slot:hover, .pool-player:hover { border-color: var(--border2); background: var(--surface2); }
 .slot .label, .pool-player .label { flex: 1; }
 
-.slot.filled { background: var(--picked-bg); }
-.slot-num { width: 1.5em; color: var(--muted); font-size: 0.85rem; }
+.slot.filled { background: var(--surface2); border-color: var(--border2); }
+.slot-num { width: 1.6em; font-family: var(--mono); color: var(--muted); font-size: 12px; }
 .slot .remove { color: var(--muted); font-size: 1.2rem; }
 .slot.open {
   border-style: dashed;
+  background: transparent;
   color: var(--muted);
   cursor: default;
   justify-content: center;
   font-size: 0.9rem;
 }
-.slots-left { margin: 10px 0 0; font-size: 0.85rem; color: var(--muted); }
+.slot.open:hover { border-color: var(--border); }
+.slots-left { margin: 10px 0 0; font-family: var(--mono); font-size: 12px; color: var(--muted); }
 
-/* A picked player stays in the pool, dimmed with a check, so the list
+/* A picked player stays in the pool, marked with a check, so the list
    doesn't jump around as you pick. */
-.pool-player.picked {
-  background: var(--picked-bg);
-  color: var(--muted);
-}
-.pool-player.picked .label::before { content: "✓ "; color: var(--hit); }
+.pool-player.picked { background: var(--surface2); border-color: rgba(74, 222, 128, 0.35); }
+.pool-player.picked .label::before { content: "✓ "; color: var(--green); }
 
 /* Can't be added right now (26 picked, or 13 pitchers). Faded but still
    tappable, so the tap can explain why in .pick-message. */
-.pool-player.blocked { opacity: 0.45; }
+.pool-player.blocked { opacity: 0.4; }
 
 /* Short "why that tap didn't work" note under the count. Empty = no space. */
-.pick-message { margin: 0; font-size: 0.85rem; color: var(--miss); }
+.pick-message { margin: 0; font-size: 0.85rem; color: var(--red); }
 .pick-message:not(:empty) { margin-top: 6px; }
 
+/* Injury / minors tag: delayDay "live" badge style. */
 .status-tag {
-  font-size: 0.72rem;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: rgba(239, 62, 66, 0.12);
-  color: var(--miss);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: rgba(248, 113, 113, 0.13);
+  color: var(--red);
   white-space: nowrap;
 }
 
-.pool-group h3:first-child { margin-top: 0; }
+.pool-group h3:first-child, .slot-group h3:first-child { margin-top: 0; }
 
 /* ---------- Picker: desktop layout (side by side) ---------- */
 
@@ -296,13 +357,13 @@ input[type="text"] {
 .confirm-dialog {
   width: min(560px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
-  border: none;
+  border: 1px solid var(--border2);
   border-radius: var(--radius);
   padding: 18px;
   background: var(--surface);
   color: var(--text);
 }
-.confirm-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+.confirm-dialog::backdrop { background: rgba(0, 0, 0, 0.7); }
 .confirm-dialog h2 { margin-bottom: 4px; }
 .dialog-actions {
   display: flex;
@@ -318,12 +379,12 @@ input[type="text"] {
 /* ---------- Roster lists, entries, scoreboard ---------- */
 
 .roster-lists ul { list-style: none; margin: 0; padding: 0; }
-.roster-lists li { padding: 3px 0; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+.roster-lists li { padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
 .roster-lists li:last-child { border-bottom: none; }
-.roster-lists li.hit .mark { color: var(--hit); }
+.roster-lists li.hit .mark { color: var(--green); }
 .roster-lists li.miss { color: var(--muted); }
-.roster-lists li.miss .mark { color: var(--miss); }
-.mark { display: inline-block; width: 1.4em; font-weight: 700; }
+.roster-lists li.miss .mark { color: var(--red); }
+.mark { display: inline-block; width: 1.4em; font-weight: 600; }
 
 @media (min-width: 700px) {
   .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -337,7 +398,9 @@ input[type="text"] {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 0 14px;
+  transition: border-color 0.15s;
 }
+.entry:hover { border-color: var(--border2); }
 .entry[open] { padding-bottom: 12px; }
 .entry summary {
   display: flex;
@@ -345,14 +408,34 @@ input[type="text"] {
   align-items: baseline;
   gap: 4px 12px;
   min-height: var(--tap);
-  padding: 10px 0;
+  padding: 11px 0;
   cursor: pointer;
 }
-.entry-name { font-weight: 700; flex: 1; }
-.entry-meta { font-size: 0.85rem; color: var(--muted); }
-.rank { font-weight: 700; color: var(--rank); min-width: 2em; }
-.score { font-weight: 700; }
+.entry-name { font-weight: 600; flex: 1; }
+.entry-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.rank { font-family: var(--mono); font-weight: 600; color: var(--dodger-bright); min-width: 2.4em; }
+.score { font-family: var(--mono); font-weight: 600; }
 .missed ul { margin: 0; padding-left: 20px; font-size: 0.92rem; }
+
+/* Winner / tied-for-first banner above the scoreboard. */
+.result-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: var(--radius);
+  border: 1px solid;
+}
+.result-banner strong { font-size: 1.1rem; font-weight: 600; }
+.result-banner span { font-size: 0.9rem; color: var(--muted); }
+.result-banner.winner { background: rgba(74, 222, 128, 0.07); border-color: rgba(74, 222, 128, 0.4); }
+.result-banner.winner strong { color: var(--green); }
+.result-banner.tied { background: rgba(245, 158, 11, 0.07); border-color: rgba(245, 158, 11, 0.4); }
+.result-banner.tied strong { color: var(--amber); }
+
+/* "Tied. Game 1 total runs will set this order." under a tied group. */
+.scoreboard .tie-note { font-family: var(--mono); font-size: 12px; color: var(--muted); padding: 0 4px 4px; }
 
 .actual summary { cursor: pointer; font-weight: 600; }
 .actual { margin-top: 16px; }

@@ -112,6 +112,24 @@ entries are scored and ranked.
    - After lock: anyone can view every entry's full roster.
    - After the admin enters the actual roster: the public page also shows the
      scoreboard (same as admin's).
+9. **Appearance.** Both pages are **always dark** (near-black navy page,
+   dark cards) for every visitor, regardless of the
+   device's light/dark setting. There is no light theme. The pages declare
+   `color-scheme: dark` so the browser's own controls match.
+   The look follows Chris's delayDay app: near-black navy palette, an
+   `nldsRoster` monospace wordmark (Dodger-blue accent, slim blue top
+   stripe), small uppercase monospace section labels, monospace for
+   counts/times/scores, outlined buttons. Fonts are built-in only (no
+   downloads): system UI font for text, the device's monospace for labels.
+   Usability floors that override the delayDay look: 16px text/inputs,
+   44px tap targets, informational text at ≥ 4.5:1 contrast, and one filled
+   primary button per screen.
+10. **Icon and link preview.** A baseball (original drawing in the style of
+    the ⚾ emoji, `img/baseball.svg`) is the browser-tab icon and the iPhone
+    home-screen icon. Sharing the link shows a social card: the baseball on
+    the site's navy with the Dodger-blue top stripe, plus the title
+    "nldsRoster: Dodgers 2026 NLDS roster challenge" and a one-line
+    description (Open Graph + Twitter card tags in `index.html`).
 
 ## 5. Server-side validation (submit)
 
@@ -146,11 +164,30 @@ impossible.
 - **Tie-breaker 1:** smallest `|runsGuess − actual Game 1 total runs|`
   (over or under doesn't matter).
 - **Tie-breaker 2:** earliest `submittedAt`.
-- The roster is announced before Game 1 is played, so for a while the
-  scoreboard exists without the runs result. Until the admin enters it,
-  tie-breaker 1 is skipped (ties rank by earliest entry) and the page says the
-  tie-breaker is still to come; the heading reads "Standings", then "Final
-  standings" once the runs are in.
+- **Tie-breakers are only used when needed.** The roster is announced before
+  Game 1 is played, so for a while the scoreboard exists without the runs
+  result:
+  - **Clear winner** (one entry has the top score): declared as soon as the
+    actual roster is saved. Game 1 doesn't matter.
+  - **Tied for first**, runs not in yet: no winner yet. The banner lists who's
+    tied and says Game 1 total runs will decide it.
+  - **Ranks while tied:** entries with the same score share a rank shown as
+    "T-2" (listed earliest entry first), followed by a note that Game 1 runs
+    will set their order. Once the runs are entered every entry gets its own
+    rank.
+- **Result banner** above the scoreboard (public page and admin alike):
+  - Winner, no tie: "Dana wins with 22 of 26", plus "No tie at the top, so
+    Game 1 isn't needed." if the runs aren't in yet.
+  - Winner by tie-breaker 1: "… Won the tie-breaker: guessed 7, Game 1 had 7 runs."
+  - Winner by tie-breaker 2: "… Tied on players and on the runs tie-breaker,
+    so the earlier entry wins."
+  - Tied for first: "Tied for 1st: Dana and Chris (22 of 26)", plus "The
+    winner is whoever's closest to Game 1 total runs. Check back after the game."
+- Heading: "Final standings" once there is a winner, whether or not Game 1 has
+  been played; otherwise "Standings".
+- API: `scoreboard` rows carry `rank` and `tied`; a separate `result` object is
+  `{ status: "winner" | "tiedForFirst", names[], score, decidedBy: null |
+  "runs" | "entry", runsGuess, game1Runs }`.
 - Scores are computed on read, never stored, so correcting the actual roster
   or the runs re-scores everyone automatically.
 
@@ -168,7 +205,8 @@ impossible.
   postseason roster the moment it's announced.
 - **Game 1 total runs:** number box (0–99) with Save and Clear. Entered after
   Game 1 ends; can be corrected or cleared at any time.
-- **Scoreboard** once an actual roster exists: ranked list (rank, name, score,
+- **Scoreboard** once an actual roster exists: the same result banner as the
+  public page (§6), then a ranked list (rank or shared "T-n" rank, name, score,
   runs guess and how far off it was, submitted time). Each row expands to show hits
   (✓) and misses (✗) for their picks, plus the actual players nobody/they
   missed.

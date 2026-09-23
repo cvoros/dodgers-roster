@@ -11,18 +11,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Always-dark site (SPEC §4.9): dark browser controls from first paint,
+       and a dark phone status/address bar to match. -->
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0c0f17">
   <!-- Private game on a company domain: keep it out of search results.
        (The .htaccess in this folder sends the same instruction as a header.) -->
   <meta name="robots" content="noindex, nofollow">
   <title>NLDS Roster Challenge</title>
+  <meta name="description" content="Pick the 26 players you think make the Dodgers' 2026 NLDS roster.">
+
+  <!-- Icons: the baseball drawing in img/ (SVG for most browsers, PNG
+       fallback, and an opaque 180px PNG for iPhone home screens). -->
+  <link rel="icon" href="img/baseball.svg" type="image/svg+xml">
+  <link rel="icon" href="img/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+
+  <!-- Social card: what iMessage, Slack, Facebook, etc. show when the link is
+       shared. og:image and og:url MUST be absolute URLs, which is why the
+       domain is written out here (see CLAUDE.md if the site ever moves). -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://qxnllc.com/baseball/">
+  <meta property="og:title" content="nldsRoster: Dodgers 2026 NLDS roster challenge">
+  <meta property="og:description" content="Pick the 26 players you think make the Dodgers' NLDS roster. Entries lock before the series starts.">
+  <meta property="og:image" content="https://qxnllc.com/baseball/img/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="A baseball">
+  <meta name="twitter:card" content="summary_large_image">
   <!-- ?v= is a cache-buster: the host tells browsers to keep CSS/JS for
        days, so change it on every deploy that touches css/ or js/ (all
        tags, both pages) and browsers fetch the new files immediately. -->
-  <link rel="stylesheet" href="css/style.css?v=2026-09-23">
+  <link rel="stylesheet" href="css/style.css?v=2026-09-23d">
 </head>
 <body>
+  <!-- delayDay-style wordmark (see css/style.css header comment) -->
   <header class="site-header">
-    <h1>Dodgers NLDS Roster Challenge</h1>
+    <h1 class="logo">nlds<span>Roster</span></h1>
+    <p class="tagline">Dodgers 2026 NLDS roster challenge</p>
     <!-- Lock countdown / "closed" notice, filled in by app.js -->
     <p id="lock-banner" class="lock-banner"></p>
   </header>
@@ -129,7 +155,7 @@
     </div>
   </dialog>
 
-  <script src="js/common.js?v=2026-09-23"></script>
-  <script src="js/app.js?v=2026-09-23"></script>
+  <script src="js/common.js?v=2026-09-23d"></script>
+  <script src="js/app.js?v=2026-09-23d"></script>
 </body>
 </html>

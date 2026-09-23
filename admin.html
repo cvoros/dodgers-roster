@@ -9,18 +9,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Always-dark site (SPEC §4.9): dark browser controls from first paint,
+       and a dark phone status/address bar to match. -->
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0c0f17">
   <!-- Keep the secret URL out of search engines and referrer headers -->
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <title>NLDS Roster Admin</title>
+  <!-- Same baseball icons as index.html (no social card: never shared) -->
+  <link rel="icon" href="img/baseball.svg" type="image/svg+xml">
+  <link rel="icon" href="img/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <!-- ?v= is a cache-buster: the host tells browsers to keep CSS/JS for
        days, so change it on every deploy that touches css/ or js/ (all
        tags, both pages) and browsers fetch the new files immediately. -->
-  <link rel="stylesheet" href="css/style.css?v=2026-09-23">
+  <link rel="stylesheet" href="css/style.css?v=2026-09-23d">
 </head>
 <body>
   <header class="site-header">
-    <h1>NLDS Roster Admin</h1>
+    <h1 class="logo">nlds<span>Roster</span><small>admin</small></h1>
     <p id="admin-status" class="lock-banner"></p>
   </header>
 
@@ -71,7 +79,7 @@
     </div>
   </main>
 
-  <script src="js/common.js?v=2026-09-23"></script>
-  <script src="js/admin.js?v=2026-09-23"></script>
+  <script src="js/common.js?v=2026-09-23d"></script>
+  <script src="js/admin.js?v=2026-09-23d"></script>
 </body>
 </html>
