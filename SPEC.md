@@ -46,7 +46,7 @@ entries are scored and ranked.
 - **Grouping:** primary position `P` → Pitchers; everything else → Position
   Players. **Two-way players (`TWP`, i.e. Shohei Ohtani)** go in Position
   Players, displayed `Shohei Ohtani TWP, L`. The admin picker uses the same
-  rule, so the pitcher-count tie-breaker is consistent on both sides.
+  rule, so pitcher counts mean the same thing on both sides.
 - Lists are sorted alphabetically by last name within each group.
 - Non-active players (e.g. "Injured 60-Day", "Reassigned to Minors") carry a
   small status tag in the pool. It's shown for information only, and they can
@@ -75,10 +75,13 @@ entries are scored and ranked.
      targets ≥ 44px. No drag-and-drop, no hover-dependent UI.
    - In-progress picks are saved to `localStorage` so an accidental refresh
      doesn't wipe them (convenience only — nothing is final until submitted).
-4. **Tie-breaker.** "Predicted number of pitchers" is shown read-only, derived
-   from their pitcher picks. Not separately editable.
-5. **Play Ball.** Button disabled until exactly 26 are picked. Pressing it opens
-   a confirm modal listing the full roster (both groups) with the question
+4. **Tie-breaker.** A number box above the picker: **"Total runs in Game 1
+   (both teams)"**, a whole number 0–99. Required. The current guess is echoed
+   in the sticky roster bar and saved with the draft.
+5. **Play Ball.** Button disabled until exactly 26 are picked. If the runs
+   guess is missing or invalid, pressing it highlights and scrolls to the runs
+   box with a message instead of opening the modal. Otherwise it opens a
+   confirm modal listing the runs guess and the full roster (both groups), with the question
    **"Are you sure this is your final roster?"** — buttons *Go back* / *Lock it in*.
 6. **Submit.** Server validates, stores, and responds. Picks are **final** —
    there is no edit or delete for players. The page then shows "You're in"
@@ -99,8 +102,10 @@ Reject with a specific error unless all hold:
 - Now is before `LOCK_AT` (server clock, `TIMEZONE`).
 - Name valid and not already taken (case-insensitive), checked under the lock.
 - Exactly 26 player ids, no duplicates, every id on the current (cached) 40-man.
+- `runsGuess` is a whole number 0–99 (JSON number or digit string; anything
+  else, including `true`, is rejected).
 - Pitcher count is **recomputed server-side** from the ids; the client's value
-  is never trusted.
+  is never trusted. It's stored for display only — it is not a tie-breaker.
 
 Stored entry:
 ```json
@@ -108,6 +113,7 @@ Stored entry:
   "name": "Chris",
   "submittedAt": "2026-10-03T19:42:11.123456-06:00",
   "pitcherCount": 13,
+  "runsGuess": 8,
   "picks": [ { "id": 660271, "name": "Shohei Ohtani", "group": "POS", "label": "Shohei Ohtani TWP, L" } ]
 }
 ```
@@ -119,10 +125,16 @@ impossible.
 
 - **1 point** per picked player who is on the actual 26-man roster (match by
   MLB player id). Max 26.
-- **Tie-breaker 1:** smallest `|predicted pitchers − actual pitchers|`.
+- **Tie-breaker 1:** smallest `|runsGuess − actual Game 1 total runs|`
+  (over or under doesn't matter).
 - **Tie-breaker 2:** earliest `submittedAt`.
+- The roster is announced before Game 1 is played, so for a while the
+  scoreboard exists without the runs result. Until the admin enters it,
+  tie-breaker 1 is skipped (ties rank by earliest entry) and the page says the
+  tie-breaker is still to come; the heading reads "Standings", then "Final
+  standings" once the runs are in.
 - Scores are computed on read, never stored, so correcting the actual roster
-  re-scores everyone automatically.
+  or the runs re-scores everyone automatically.
 
 ## 7. Admin (`admin.html?key=…`)
 
@@ -136,8 +148,10 @@ impossible.
   `teams/119/roster?rosterType=active` and pre-fills the picker. The admin must
   still review and press Save — MLB's "active" list may not reflect the
   postseason roster the moment it's announced.
+- **Game 1 total runs:** number box (0–99) with Save and Clear. Entered after
+  Game 1 ends; can be corrected or cleared at any time.
 - **Scoreboard** once an actual roster exists: ranked list (rank, name, score,
-  pitcher guess vs actual, submitted time). Each row expands to show hits
+  runs guess and how far off it was, submitted time). Each row expands to show hits
   (✓) and misses (✗) for their picks, plus the actual players nobody/they
   missed.
 - **Entry management:** admin can delete an entry (test entries, a friend who
@@ -149,11 +163,11 @@ impossible.
 | Method & path | Auth | Purpose |
 |---|---|---|
 | `GET roster.php` | — | Normalized 40-man pool (cached proxy) |
-| `GET state.php` | — | `{ now, lockAt, locked, entryCount, names[], hasActual }` |
+| `GET state.php` | — | `{ now, lockAt, locked, entryCount, names[], hasActual, hasGame1Runs }` |
 | `GET check-name.php?name=` | — | `{ available: bool }` (before lock only) |
-| `POST submit.php` | — | `{ name, playerIds[] }` → stored entry or error |
-| `GET entries.php` | — | 403 before lock; all entries after lock; includes scoreboard if actual roster exists |
-| `GET admin.php?action=…` / `POST admin.php` | key | `entries`, `saveActual`, `pullActive`, `deleteEntry` |
+| `POST submit.php` | — | `{ name, playerIds[], runsGuess }` → stored entry or error |
+| `GET entries.php` | — | 403 before lock; all entries after lock, plus `game1Runs`; includes scoreboard if actual roster exists |
+| `GET admin.php?action=…` / `POST admin.php` | key | `overview`, `pullActive`, `saveActual`, `saveGame1Runs`, `deleteEntry` |
 
 Errors: HTTP 4xx with `{ "error": "human-readable message" }`.
 

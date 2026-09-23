@@ -31,6 +31,19 @@
         <div id="entries"></div>
       </section>
 
+      <!-- Tie-breaker result: total runs (both teams) in NLDS Game 1 -->
+      <section class="card">
+        <h2>Game 1 total runs</h2>
+        <p id="runs-status" class="muted small"></p>
+        <div class="admin-actions">
+          <input id="admin-runs-input" class="runs-input" type="number" inputmode="numeric" pattern="[0-9]*"
+                 min="0" max="99" step="1" placeholder="e.g. 7" aria-label="Game 1 total runs">
+          <button id="save-runs" type="button" class="btn primary">Save runs</button>
+          <button id="clear-runs" type="button" class="btn">Clear</button>
+        </div>
+        <p id="runs-message" class="small" role="status"></p>
+      </section>
+
       <!-- Enter the actual 26-man roster with the same picker players use -->
       <section class="card">
         <h2>Actual NLDS roster</h2>

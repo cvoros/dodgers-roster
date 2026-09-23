@@ -42,6 +42,10 @@ const ROSTER_SIZE = 26;
 // Dodgers team id in the MLB Stats API.
 const MLB_TEAM_ID = 119;
 
+// Highest allowed Game 1 total-runs number (tie-breaker). Generous: the
+// postseason record for one game is well under this.
+const MAX_RUNS = 99;
+
 /**
  * Send a JSON success response and stop.
  */
@@ -136,6 +140,7 @@ function public_state(array $store): array
         'entryCount' => count($store['entries']),
         'names'      => array_map(function ($e) { return $e['name']; }, sorted_by_submission($store['entries'])),
         'hasActual'  => $store['actual'] !== null,
+        'hasGame1Runs' => $store['game1Runs'] !== null,
     ];
 }
 
@@ -145,8 +150,9 @@ function public_state(array $store): array
 //
 // Shape of data/store.json:
 //   {
-//     "entries": [ { name, submittedAt, pitcherCount, picks: [...] }, ... ],
-//     "actual":  null | { savedAt, pitcherCount, players: [...] }
+//     "entries":   [ { name, submittedAt, pitcherCount, runsGuess, picks: [...] }, ... ],
+//     "actual":    null | { savedAt, pitcherCount, players: [...] },
+//     "game1Runs": null | int   (total runs, both teams, in NLDS Game 1)
 //   }
 //
 // Why flock: two friends can press "Play Ball" at the same instant. Without an
@@ -187,8 +193,11 @@ function with_store(bool $write, callable $callback)
     $raw = stream_get_contents($handle);
     $store = $raw ? json_decode($raw, true) : null;
     if (!is_array($store)) {
-        $store = ['entries' => [], 'actual' => null];   // brand-new file
+        $store = [];   // brand-new file
     }
+    // Fill in any missing keys, so files saved by older versions of the app
+    // (e.g. before game1Runs existed) still have the full shape.
+    $store += ['entries' => [], 'actual' => null, 'game1Runs' => null];
 
     $result = $callback($store);
 
@@ -482,6 +491,26 @@ function build_roster($playerIds): array
     return ['picks' => $picks, 'pitcherCount' => $pitcherCount];
 }
 
+/**
+ * Check a Game 1 total-runs number (a player's tie-breaker guess, or the
+ * admin's actual result) and return it as an int, or send a JSON error.
+ *
+ * Accepts a JSON number or a string of digits, 0 to MAX_RUNS. Anything else
+ * (decimals, negatives, true/false, blank) is rejected. The explicit type
+ * check matters: filter_var alone would turn JSON `true` into 1.
+ */
+function parse_runs($value, string $whatForErrors): int
+{
+    $looksLikeInt = is_int($value) || (is_string($value) && ctype_digit($value));
+    $runs = $looksLikeInt
+        ? filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => MAX_RUNS]])
+        : false;
+    if ($runs === false) {
+        json_error($whatForErrors . ' must be a whole number from 0 to ' . MAX_RUNS . '.');
+    }
+    return $runs;
+}
+
 // ---------------------------------------------------------------------------
 // 7. Scoring
 // ---------------------------------------------------------------------------
@@ -490,15 +519,19 @@ function build_roster($playerIds): array
  * Score and rank every entry against the actual roster (SPEC §6).
  *
  *   score        = number of picks that are on the actual roster
- *   tie-break 1  = smallest |predicted pitchers - actual pitchers|
+ *   tie-break 1  = smallest |runs guess - actual Game 1 total runs|
  *   tie-break 2  = earliest submission
+ *
+ * $game1Runs is null until the admin enters the Game 1 result (the roster
+ * is announced before Game 1 is played). Until then tie-break 1 is skipped
+ * and each row's runsDiff is null.
  *
  * Because the tie-breaks end on a timestamp, every entry gets a distinct
  * rank. Each pick is marked hit: true/false, and each entry lists the actual
  * players it missed. Computed on every read, so fixing the actual roster
- * re-scores everyone.
+ * or the runs re-scores everyone.
  */
-function scoreboard(array $entries, array $actual): array
+function scoreboard(array $entries, array $actual, ?int $game1Runs): array
 {
     $actualIds = [];
     foreach ($actual['players'] as $player) {
@@ -523,15 +556,27 @@ function scoreboard(array $entries, array $actual): array
             return !isset($pickedIds[$p['id']]);
         }));
 
-        $entry['score']       = $score;
-        $entry['pitcherDiff'] = abs($entry['pitcherCount'] - $actual['pitcherCount']);
-        $entry['missed']      = $missed;
+        // How far off the runs guess was. null when the result isn't in yet,
+        // or for an entry saved before the runs guess existed.
+        $hasGuess = isset($entry['runsGuess']);
+        $entry['runsDiff'] = ($game1Runs !== null && $hasGuess)
+            ? abs($entry['runsGuess'] - $game1Runs)
+            : null;
+
+        $entry['score']  = $score;
+        $entry['missed'] = $missed;
         $rows[] = $entry;
     }
 
-    usort($rows, function ($a, $b) {
-        return [$b['score'], $a['pitcherDiff'], submission_time($a)]
-           <=> [$a['score'], $b['pitcherDiff'], submission_time($b)];
+    // For sorting, "no runsDiff" counts as infinitely far off. Before the
+    // result is entered that's true of every row, so ties fall straight
+    // through to earliest submission.
+    $diffForSort = function ($row) {
+        return $row['runsDiff'] === null ? PHP_INT_MAX : $row['runsDiff'];
+    };
+    usort($rows, function ($a, $b) use ($diffForSort) {
+        return [$b['score'], $diffForSort($a), submission_time($a)]
+           <=> [$a['score'], $diffForSort($b), submission_time($b)];
     });
 
     foreach ($rows as $i => &$row) {

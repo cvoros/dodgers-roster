@@ -2,12 +2,14 @@
 /**
  * api/admin.php — admin actions. Every request needs the X-Admin-Key header.
  *
- * GET  ?action=overview    → { state, entries, actual, scoreboard }
+ * GET  ?action=overview    → { state, entries, actual, game1Runs, scoreboard }
  *                            (all entries, even before lock)
  * GET  ?action=pullActive  → { playerIds, unknown[], count } from MLB's active
  *                            roster, to pre-fill the picker. Nothing is saved.
- * POST { action: "saveActual",  playerIds: [26 ids] } → save the real roster
- * POST { action: "deleteEntry", name: "..." }         → remove one entry
+ * POST { action: "saveActual",    playerIds: [26 ids] } → save the real roster
+ * POST { action: "saveGame1Runs", runs: int|null }      → save (or clear, with
+ *                                                          null) Game 1 total runs
+ * POST { action: "deleteEntry",   name: "..." }         → remove one entry
  */
 require __DIR__ . '/lib.php';
 require_method('GET', 'POST');
@@ -22,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'state'      => public_state($store),
             'entries'    => sorted_by_submission($store['entries']),
             'actual'     => $store['actual'],
-            'scoreboard' => $store['actual'] ? scoreboard($store['entries'], $store['actual']) : null,
+            'game1Runs'  => $store['game1Runs'],
+            'scoreboard' => $store['actual'] ? scoreboard($store['entries'], $store['actual'], $store['game1Runs']) : null,
         ]);
     }
 
@@ -64,6 +67,15 @@ if ($action === 'saveActual') {
         $store['actual'] = $actual;
     });
     json_out(['ok' => true, 'actual' => $actual]);
+}
+
+if ($action === 'saveGame1Runs') {
+    // null clears it (e.g. entered by mistake before the game ended).
+    $runs = ($body['runs'] ?? null) === null ? null : parse_runs($body['runs'], 'Game 1 total runs');
+    with_store(true, function (array &$store) use ($runs) {
+        $store['game1Runs'] = $runs;
+    });
+    json_out(['ok' => true, 'game1Runs' => $runs]);
 }
 
 if ($action === 'deleteEntry') {

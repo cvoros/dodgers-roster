@@ -76,7 +76,7 @@ function render(overview) {
 
   if (overview.scoreboard) {
     $('entries-heading').textContent = 'Scoreboard';
-    $('entries').replaceChildren(renderScoreboard(overview.scoreboard, overview.actual, timeZone, deleteButton));
+    $('entries').replaceChildren(renderScoreboard(overview.scoreboard, overview.actual, overview.game1Runs, timeZone, deleteButton));
   } else {
     $('entries-heading').textContent = 'Entries (' + overview.entries.length + ')';
     $('entries').replaceChildren(
@@ -89,7 +89,39 @@ function render(overview) {
     ? 'Saved ' + formatTime(overview.actual.savedAt, timeZone) + ' · ' + overview.actual.pitcherCount +
       ' pitchers. Change the picks below and save again to correct it; scores update automatically.'
     : 'Not entered yet.';
+
+  // Game 1 runs: show the saved value, and pre-fill the box with it.
+  const runs = overview.game1Runs;
+  $('runs-status').textContent = runs === null
+    ? 'Not entered yet. Enter it after Game 1 ends; until then ties are broken by earliest entry.'
+    : 'Saved: ' + runs + ' runs. Ties are broken by closest guess to this.';
+  $('admin-runs-input').value = runs === null ? '' : String(runs);
 }
+
+/** Save (or, with null, clear) the Game 1 total runs. */
+async function saveRuns(runs) {
+  const message = $('runs-message');
+  try {
+    await adminApi('', { method: 'POST', body: { action: 'saveGame1Runs', runs } });
+    message.textContent = runs === null ? 'Cleared.' : 'Saved.';
+    await refresh();
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
+
+$('save-runs').addEventListener('click', () => {
+  const text = $('admin-runs-input').value.trim();
+  if (!/^\d{1,2}$/.test(text)) {
+    $('runs-message').textContent = 'Enter a whole number from 0 to 99.';
+    return;
+  }
+  saveRuns(Number(text));
+});
+
+$('clear-runs').addEventListener('click', () => {
+  if (confirm('Clear the Game 1 runs? Tie-breaks go back to earliest entry.')) saveRuns(null);
+});
 
 /** Re-fetch everything after a change. */
 async function refresh() {

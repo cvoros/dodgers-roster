@@ -4,8 +4,10 @@
  *
  * Before lock this refuses with 403, so nobody can peek at other picks
  * (SPEC §4.8). After lock:
- *   { entries: [...earliest first], actual: null|{...}, scoreboard: null|[...] }
- * The scoreboard appears once the admin has entered the actual roster.
+ *   { entries: [...earliest first], actual: null|{...}, game1Runs: null|int,
+ *     scoreboard: null|[...] }
+ * The scoreboard appears once the admin has entered the actual roster; the
+ * runs tie-breaker applies once they've also entered the Game 1 result.
  */
 require __DIR__ . '/lib.php';
 require_method('GET');
@@ -18,5 +20,6 @@ $store = read_store();
 json_out([
     'entries'    => sorted_by_submission($store['entries']),
     'actual'     => $store['actual'],
-    'scoreboard' => $store['actual'] ? scoreboard($store['entries'], $store['actual']) : null,
+    'game1Runs'  => $store['game1Runs'],
+    'scoreboard' => $store['actual'] ? scoreboard($store['entries'], $store['actual'], $store['game1Runs']) : null,
 ]);

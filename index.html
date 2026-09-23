@@ -39,11 +39,12 @@
       <ol>
         <li>Pick the <strong>26 players</strong> you think make the Dodgers' NLDS roster.</li>
         <li>Tap a player to add them. Tap a roster slot to take them off.</li>
+        <li>Guess the <strong>total runs scored in Game 1</strong> (both teams combined) as a tie-breaker.</li>
         <li>Press <strong>Play Ball</strong> when you have 26. <strong>Entries are final</strong> once confirmed.</li>
       </ol>
       <h3>Scoring</h3>
-      <p>1 point for each player you get right. Ties go to whoever is closest on the
-        <strong>number of pitchers</strong>, then to whoever <strong>entered first</strong>.
+      <p>1 point for each player you get right. Ties go to whoever is closest on
+        <strong>Game 1 total runs</strong> (over or under), then to whoever <strong>entered first</strong>.
         Everyone's picks are revealed when entries lock.</p>
     </section>
 
@@ -64,14 +65,22 @@
       <p class="picking-as">Picking as <strong id="picking-name"></strong>
         <button id="change-name" type="button" class="link-btn">change</button></p>
 
+      <!-- Tie-breaker guess (SPEC §4.4). Required before Play Ball. -->
+      <div id="tiebreak-card" class="card tiebreak-card">
+        <label for="runs-input">Tie-breaker: total runs in Game 1 (both teams)</label>
+        <input id="runs-input" type="number" inputmode="numeric" pattern="[0-9]*"
+               min="0" max="99" step="1" placeholder="e.g. 8">
+        <p id="runs-error" class="error small" role="alert"></p>
+      </div>
+
       <div class="picker-layout">
         <!-- Right on desktop, sticky top bar on mobile -->
         <aside class="roster-panel">
           <div class="roster-bar">
             <div>
               <div id="pick-count" class="pick-count" aria-live="polite"></div>
-              <!-- Tie-breaker: derived from picks, not editable (SPEC §4.4) -->
-              <div class="tiebreak">Tie-breaker, predicted pitchers: <strong id="tiebreak-value">0</strong></div>
+              <!-- Echo of the runs guess, so it's visible from the sticky bar -->
+              <div class="tiebreak">Game 1 runs guess: <strong id="tiebreak-value">–</strong></div>
             </div>
             <button id="play-ball" type="button" class="btn primary" disabled>Play Ball</button>
           </div>

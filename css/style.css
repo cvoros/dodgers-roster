@@ -170,6 +170,23 @@ input[type="text"] {
 .pick-count.complete { color: var(--hit); }
 .tiebreak { font-size: 0.85rem; color: var(--muted); }
 
+/* Runs-guess box above the picker. Narrow input: it's a 1–2 digit number. */
+.tiebreak-card { padding: 12px 16px; margin-bottom: 12px; }
+.tiebreak-card input[type="number"],
+.runs-input {
+  width: 7em;
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.tiebreak-card .error { margin: 6px 0 0; }
+/* Draw attention when Play Ball is pressed without a guess. */
+.tiebreak-card.needs-attention { border-color: var(--red); box-shadow: 0 0 0 2px rgba(239, 62, 66, 0.35); }
+
 /* "Roster full" nudge when tapping a player with 26 picked. */
 .pick-count.flash { animation: flash 0.6s ease 2; }
 @keyframes flash {

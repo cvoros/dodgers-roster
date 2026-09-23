@@ -129,8 +129,7 @@ function formatCountdown(ms) {
 /**
  * Renders the player pool (Pitchers / Position Players) and the 26 roster
  * slots, and keeps them in sync. Used by both the player page and the admin
- * "actual roster" page, so both sides group players identically (important
- * for the pitcher-count tie-breaker).
+ * "actual roster" page, so both sides group players identically.
  *
  * Interaction (SPEC §4.3):
  *   - tap a pool player  → added to the next open slot of their group
@@ -337,6 +336,16 @@ function renderRosterLists(picks) {
 }
 
 /**
+ * "Runs guess 8", plus "(off by 2)" once the Game 1 result is in.
+ * Entries saved before the runs tie-breaker existed show "–".
+ */
+function runsGuessText(entry) {
+  const guess = typeof entry.runsGuess === 'number' ? String(entry.runsGuess) : '–';
+  const diff = typeof entry.runsDiff === 'number' ? ' (off by ' + entry.runsDiff + ')' : '';
+  return 'Runs guess ' + guess + diff;
+}
+
+/**
  * List of entries (no scores yet), each expandable to show the roster.
  *   extraControls(entry) may return a node appended inside each entry
  *   (the admin page uses this for Delete buttons).
@@ -349,7 +358,7 @@ function renderEntryList(entries, timeZone, extraControls) {
     el('details', { className: 'entry' }, [
       el('summary', {}, [
         el('span', { className: 'entry-name', textContent: entry.name }),
-        el('span', { className: 'entry-meta', textContent: entry.pitcherCount + ' P · ' + formatTime(entry.submittedAt, timeZone) }),
+        el('span', { className: 'entry-meta', textContent: runsGuessText(entry) + ' · ' + formatTime(entry.submittedAt, timeZone) }),
       ]),
       renderRosterLists(entry.picks),
       extraControls ? extraControls(entry) : null,
@@ -359,11 +368,16 @@ function renderEntryList(entries, timeZone, extraControls) {
 /**
  * Ranked scoreboard. Each row expands to show that entry's hits and misses
  * and the actual players they left out.
+ *   game1Runs is the actual Game 1 total, or null if it isn't in yet (the
+ *   server then ranks ties by earliest entry only).
  */
-function renderScoreboard(rows, actual, timeZone, extraControls) {
+function renderScoreboard(rows, actual, game1Runs, timeZone, extraControls) {
+  const tiebreakText = game1Runs === null
+    ? 'Ties will be broken by closest guess at Game 1 total runs once that game is played (then earliest entry).'
+    : 'Game 1 total runs: ' + game1Runs + '. Ties broken by closest runs guess, then earliest entry.';
   const header = el('p', { className: 'muted' }, [
     'Actual roster: ' + actual.pitcherCount + ' pitchers / ' + (ROSTER_SIZE - actual.pitcherCount) +
-    ' position players. Ties broken by closest pitcher count, then earliest entry.',
+    ' position players. ' + tiebreakText,
   ]);
   const list = el('ol', { className: 'scoreboard' }, rows.map((row) =>
     el('li', {}, [
@@ -372,7 +386,7 @@ function renderScoreboard(rows, actual, timeZone, extraControls) {
           el('span', { className: 'rank', textContent: '#' + row.rank }),
           el('span', { className: 'entry-name', textContent: row.name }),
           el('span', { className: 'score', textContent: row.score + ' / ' + ROSTER_SIZE }),
-          el('span', { className: 'entry-meta', textContent: 'P guess ' + row.pitcherCount + ' (off by ' + row.pitcherDiff + ')' }),
+          el('span', { className: 'entry-meta', textContent: runsGuessText(row) }),
         ]),
         el('p', { className: 'muted small' }, ['Submitted ' + formatTime(row.submittedAt, timeZone)]),
         renderRosterLists(row.picks),

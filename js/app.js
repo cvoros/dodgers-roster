@@ -189,6 +189,7 @@ async function showPicker() {
     });
     const draft = loadJson(DRAFT_KEY);
     if (draft && Array.isArray(draft.ids)) picker.setIds(draft.ids);
+    if (draft && typeof draft.runs === 'string') $('runs-input').value = draft.runs;
     onPicksChanged(picker);
 
     $('roster-note').textContent = pool.stale
@@ -199,15 +200,45 @@ async function showPicker() {
   showScreen('screen-pick');
 }
 
-/** Runs after every add/remove: tie-breaker, Play Ball button, draft. */
+/** Runs after every add/remove: Play Ball button, tie-breaker echo, draft. */
 function onPicksChanged(currentPicker) {
-  $('tiebreak-value').textContent = String(currentPicker.pitcherCount());
+  // Play Ball unlocks at 26 picks (SPEC §4.5). A missing runs guess is
+  // caught when it's pressed, so the player gets told what's missing
+  // instead of staring at a greyed-out button.
   $('play-ball').disabled = !currentPicker.isFull();
+  updateRunsEcho();
   saveDraft();
 }
 
+/**
+ * The runs guess as a whole number 0–99, or null if the box is empty or
+ * holds anything else. The server checks this again (parse_runs in lib.php).
+ */
+function readRunsGuess() {
+  const text = $('runs-input').value.trim();
+  return /^\d{1,2}$/.test(text) ? Number(text) : null;
+}
+
+/** Mirror the guess into the sticky bar ("–" until there is one). */
+function updateRunsEcho() {
+  const runs = readRunsGuess();
+  $('tiebreak-value').textContent = runs === null ? '–' : String(runs);
+}
+
+// Typing a guess: update the echo, clear any "you forgot this" warning, save.
+$('runs-input').addEventListener('input', () => {
+  $('runs-error').textContent = '';
+  $('tiebreak-card').classList.remove('needs-attention');
+  updateRunsEcho();
+  saveDraft();
+});
+
 function saveDraft() {
-  saveJson(DRAFT_KEY, { name: playerName || $('name-input').value, ids: picker ? picker.getIds() : [] });
+  saveJson(DRAFT_KEY, {
+    name: playerName || $('name-input').value,
+    ids: picker ? picker.getIds() : [],
+    runs: $('runs-input').value,   // raw text, so a half-typed value survives too
+  });
 }
 
 // Mobile: the roster panel is a sticky bar; this expands/collapses its slots.
@@ -224,10 +255,23 @@ $('toggle-slots').addEventListener('click', () => {
 
 $('play-ball').addEventListener('click', () => {
   if (!picker.isFull()) return;
+
+  // No valid runs guess yet: point them at the box instead of opening the modal.
+  const runsGuess = readRunsGuess();
+  if (runsGuess === null) {
+    $('runs-error').textContent = 'Enter your Game 1 total runs guess (a whole number, 0–99) first.';
+    $('tiebreak-card').classList.add('needs-attention');
+    // 'center' so the sticky roster bar on phones doesn't cover the box.
+    // Instant jump, not smooth: smooth scrolling proved unreliable in testing.
+    $('tiebreak-card').scrollIntoView({ block: 'center' });
+    $('runs-input').focus({ preventScroll: true });
+    return;
+  }
+
   const picks = picker.getIds().map((id) => picker.byId.get(id));
   $('confirm-roster').replaceChildren(
     el('p', { className: 'small' }, [
-      playerName + ' · ' + picker.pitcherCount() + ' pitchers (tie-breaker)',
+      playerName + ' · Game 1 runs guess: ' + runsGuess,
     ]),
     renderRosterLists(picks),
   );
@@ -243,7 +287,7 @@ $('confirm-submit').addEventListener('click', async () => {
   try {
     const entry = await api('submit.php', {
       method: 'POST',
-      body: { name: playerName, playerIds: picker.getIds() },
+      body: { name: playerName, playerIds: picker.getIds(), runsGuess: readRunsGuess() },
     });
     saveJson(ENTRY_KEY, entry);
     saveJson(DRAFT_KEY, null);
@@ -276,7 +320,7 @@ function showDone(entry) {
   $('done-roster').replaceChildren(
     el('p', { className: 'small' }, [
       'Submitted ' + formatTime(entry.submittedAt, gameState.timezone) +
-      ' · ' + entry.pitcherCount + ' pitchers (tie-breaker)',
+      ' · Game 1 runs guess: ' + entry.runsGuess,
     ]),
     renderRosterLists(entry.picks),
   );
@@ -298,8 +342,9 @@ async function showResults() {
 
   if (data.scoreboard) {
     container.replaceChildren(
-      el('h2', {}, ['Final standings']),
-      renderScoreboard(data.scoreboard, data.actual, gameState.timezone),
+      // Not "final" until the Game 1 tie-breaker is in.
+      el('h2', {}, [data.game1Runs === null ? 'Standings' : 'Final standings']),
+      renderScoreboard(data.scoreboard, data.actual, data.game1Runs, gameState.timezone),
       el('details', { className: 'card actual' }, [
         el('summary', {}, ['The actual NLDS roster']),
         renderRosterLists(data.actual.players),

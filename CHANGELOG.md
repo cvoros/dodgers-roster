@@ -5,6 +5,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- Tie-breaker is now a guess at **total runs in NLDS Game 1** (both teams),
+  entered by each player before Play Ball, instead of the pitcher count.
+  Closest guess wins a tie, then earliest entry. The admin page has a new
+  "Game 1 total runs" box to enter the result after the game.
+
 ### Added
 - SPEC.md and CLAUDE.md describing the game and project conventions.
 - PHP JSON API: cached 40-man roster proxy (MLB Stats API, team 119), game
