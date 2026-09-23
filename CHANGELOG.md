@@ -12,6 +12,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   decide it. Once decided, it says how (tie-breaker guess, or earlier entry).
 
 ### Changed
+- The site is always dark for everyone. Before, it followed each device's
+  light/dark setting, and the light version was a stark white.
 - Tied entries share a rank ("T-2") until the Game 1 runs are entered.
   Previously they were quietly ordered by entry time, which looked decided.
 - The heading reads "Final standings" as soon as there's a winner, even

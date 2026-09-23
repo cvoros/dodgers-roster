@@ -9,6 +9,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Always-dark site (SPEC §4.9): dark browser controls from first paint,
+       and a dark phone status/address bar to match. -->
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0f1419">
   <!-- Keep the secret URL out of search engines and referrer headers -->
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
@@ -16,7 +20,7 @@
   <!-- ?v= is a cache-buster: the host tells browsers to keep CSS/JS for
        days, so change it on every deploy that touches css/ or js/ (all
        tags, both pages) and browsers fetch the new files immediately. -->
-  <link rel="stylesheet" href="css/style.css?v=2026-09-23b">
+  <link rel="stylesheet" href="css/style.css?v=2026-09-23c">
 </head>
 <body>
   <header class="site-header">
@@ -71,7 +75,7 @@
     </div>
   </main>
 
-  <script src="js/common.js?v=2026-09-23b"></script>
-  <script src="js/admin.js?v=2026-09-23b"></script>
+  <script src="js/common.js?v=2026-09-23c"></script>
+  <script src="js/admin.js?v=2026-09-23c"></script>
 </body>
 </html>
