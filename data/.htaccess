@@ -1,0 +1,10 @@
+# Block all web access to this folder. It holds entries and cached roster data.
+# (Best practice is to point DATA_DIR outside public_html entirely; this is the
+# safety net for when that isn't possible.)
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
