@@ -112,8 +112,8 @@ entries are scored and ranked.
    - After lock: anyone can view every entry's full roster.
    - After the admin enters the actual roster: the public page also shows the
      scoreboard (same as admin's).
-9. **Appearance.** Both pages are **always dark** (dark navy-charcoal page,
-   dark cards, Dodger-blue header) for every visitor, regardless of the
+9. **Appearance.** Both pages are **always dark** (near-black navy page,
+   dark cards) for every visitor, regardless of the
    device's light/dark setting. There is no light theme. The pages declare
    `color-scheme: dark` so the browser's own controls match.
    The look follows Chris's delayDay app: near-black navy palette, an
