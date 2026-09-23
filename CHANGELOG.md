@@ -5,6 +5,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Results now name the winner. A banner says who won as soon as the real
+  roster is saved if nobody is tied for first, without waiting for Game 1. If
+  there's a tie for first, it lists who's tied and says Game 1 runs will
+  decide it. Once decided, it says how (tie-breaker guess, or earlier entry).
+
+### Changed
+- Tied entries share a rank ("T-2") until the Game 1 runs are entered.
+  Previously they were quietly ordered by entry time, which looked decided.
+- The heading reads "Final standings" as soon as there's a winner, even
+  before Game 1.
+
 ## [0.1.0] - 2026-09-23
 
 First release, deployed at qxnllc.com/baseball.

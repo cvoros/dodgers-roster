@@ -428,24 +428,82 @@ function renderEntryList(entries, timeZone, extraControls) {
 }
 
 /**
- * Ranked scoreboard. Each row expands to show that entry's hits and misses
- * and the actual players they left out.
- *   game1Runs is the actual Game 1 total, or null if it isn't in yet (the
- *   server then ranks ties by earliest entry only).
+ * "Dana", "Dana and Chris", "Dana, Chris, and Alex".
  */
-function renderScoreboard(rows, actual, game1Runs, timeZone, extraControls) {
+function joinNames(names) {
+  if (names.length <= 2) return names.join(' and ');
+  return names.slice(0, -1).join(', ') + ', and ' + names[names.length - 1];
+}
+
+/**
+ * The banner above the scoreboard: who won, or who's tied for first.
+ * `result` comes from scoreboard_result() in api/lib.php (SPEC §6).
+ */
+function renderResultBanner(result) {
+  if (!result) return null;
+  const outOf = result.score + ' of ' + ROSTER_SIZE;
+
+  if (result.status === 'tiedForFirst') {
+    return el('div', { className: 'result-banner tied' }, [
+      el('strong', {}, ['Tied for 1st: ' + joinNames(result.names) + ' (' + outOf + ')']),
+      el('span', {}, ["The winner is whoever's closest to Game 1 total runs. Check back after the game."]),
+    ]);
+  }
+
+  // A winner. The second line says how it was decided.
+  let how;
+  if (result.decidedBy === 'runs') {
+    how = 'Won the tie-breaker: guessed ' + result.runsGuess + ', Game 1 had ' + result.game1Runs + ' runs.';
+  } else if (result.decidedBy === 'entry') {
+    how = 'Tied on players and on the runs tie-breaker, so the earlier entry wins.';
+  } else if (result.game1Runs === null) {
+    how = "No tie at the top, so Game 1 isn't needed.";
+  } else {
+    how = 'No tie at the top.';
+  }
+  return el('div', { className: 'result-banner winner' }, [
+    el('strong', {}, [result.names[0] + ' wins with ' + outOf]),
+    el('span', {}, [how]),
+  ]);
+}
+
+/**
+ * Heading for the results: "Final standings" once there's a winner (even
+ * before Game 1, if nobody tied for first), otherwise "Standings".
+ */
+function standingsTitle(result) {
+  return result && result.status === 'winner' ? 'Final standings' : 'Standings';
+}
+
+/**
+ * Ranked scoreboard with the winner banner on top. Each row expands to show
+ * that entry's hits and misses and the actual players they left out.
+ *
+ *   data           { scoreboard, result, actual, game1Runs } exactly as
+ *                  api/entries.php and api/admin.php return them
+ *   extraControls  optional (row) => node, added inside each expanded row
+ *                  (the admin page's Delete button)
+ *
+ * Tied rows (row.tied, only possible before the Game 1 result) show a
+ * shared rank like "T-2", followed by a note that Game 1 will order them.
+ */
+function renderScoreboard(data, timeZone, extraControls) {
+  const { scoreboard: rows, result, actual, game1Runs } = data;
+
   const tiebreakText = game1Runs === null
-    ? 'Ties will be broken by closest guess at Game 1 total runs once that game is played (then earliest entry).'
+    ? 'Ties are broken by closest guess at Game 1 total runs, then earliest entry.'
     : 'Game 1 total runs: ' + game1Runs + '. Ties broken by closest runs guess, then earliest entry.';
-  const header = el('p', { className: 'muted' }, [
+  const header = el('p', { className: 'muted small' }, [
     'Actual roster: ' + actual.pitcherCount + ' pitchers / ' + (ROSTER_SIZE - actual.pitcherCount) +
     ' position players. ' + tiebreakText,
   ]);
-  const list = el('ol', { className: 'scoreboard' }, rows.map((row) =>
-    el('li', {}, [
+
+  const items = [];
+  rows.forEach((row, index) => {
+    items.push(el('li', {}, [
       el('details', { className: 'entry' }, [
         el('summary', {}, [
-          el('span', { className: 'rank', textContent: '#' + row.rank }),
+          el('span', { className: 'rank', textContent: (row.tied ? 'T-' : '') + row.rank }),
           el('span', { className: 'entry-name', textContent: row.name }),
           el('span', { className: 'score', textContent: row.score + ' / ' + ROSTER_SIZE }),
           el('span', { className: 'entry-meta', textContent: runsGuessText(row) }),
@@ -460,6 +518,18 @@ function renderScoreboard(rows, actual, game1Runs, timeZone, extraControls) {
           : null,
         extraControls ? extraControls(row) : null,
       ]),
-    ])));
-  return el('div', {}, [header, list]);
+    ]));
+    // After the last row of a tied group, explain that the order isn't final.
+    const next = rows[index + 1];
+    const endsTiedGroup = row.tied && (!next || next.score !== row.score);
+    if (endsTiedGroup) {
+      items.push(el('li', { className: 'tie-note' }, ['Tied. Game 1 total runs will set this order.']));
+    }
+  });
+
+  return el('div', {}, [
+    renderResultBanner(result),
+    header,
+    el('ol', { className: 'scoreboard' }, items),
+  ]);
 }

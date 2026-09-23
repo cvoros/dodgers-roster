@@ -343,9 +343,9 @@ async function showResults() {
 
   if (data.scoreboard) {
     container.replaceChildren(
-      // Not "final" until the Game 1 tie-breaker is in.
-      el('h2', {}, [data.game1Runs === null ? 'Standings' : 'Final standings']),
-      renderScoreboard(data.scoreboard, data.actual, data.game1Runs, gameState.timezone),
+      // "Final standings" once there's a winner, which can be before Game 1.
+      el('h2', {}, [standingsTitle(data.result)]),
+      renderScoreboard(data, gameState.timezone),
       el('details', { className: 'card actual' }, [
         el('summary', {}, ['The actual NLDS roster']),
         renderRosterLists(data.actual.players),

@@ -354,6 +354,25 @@ input[type="text"] {
 .score { font-weight: 700; }
 .missed ul { margin: 0; padding-left: 20px; font-size: 0.92rem; }
 
+/* Winner / tied-for-first banner above the scoreboard. */
+.result-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: var(--radius);
+  border: 1px solid;
+}
+.result-banner strong { font-size: 1.1rem; }
+.result-banner span { font-size: 0.9rem; }
+.result-banner.winner { background: rgba(26, 127, 55, 0.1); border-color: var(--hit); }
+.result-banner.winner strong { color: var(--hit); }
+.result-banner.tied { background: rgba(239, 62, 66, 0.08); border-color: var(--red); }
+
+/* "Tied. Game 1 total runs will set this order." under a tied group. */
+.scoreboard .tie-note { font-size: 0.85rem; color: var(--muted); padding: 0 4px 4px; }
+
 .actual summary { cursor: pointer; font-weight: 600; }
 .actual { margin-top: 16px; }
 

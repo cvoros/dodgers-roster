@@ -76,8 +76,8 @@ function render(overview) {
   $('admin-status').textContent = lockText + ' · ' + state.entryCount + ' entries';
 
   if (overview.scoreboard) {
-    $('entries-heading').textContent = 'Scoreboard';
-    $('entries').replaceChildren(renderScoreboard(overview.scoreboard, overview.actual, overview.game1Runs, timeZone, deleteButton));
+    $('entries-heading').textContent = 'Scoreboard: ' + standingsTitle(overview.result).toLowerCase();
+    $('entries').replaceChildren(renderScoreboard(overview, timeZone, deleteButton));
   } else {
     $('entries-heading').textContent = 'Entries (' + overview.entries.length + ')';
     $('entries').replaceChildren(

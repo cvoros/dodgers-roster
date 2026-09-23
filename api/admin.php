@@ -2,7 +2,7 @@
 /**
  * api/admin.php — admin actions. Every request needs the X-Admin-Key header.
  *
- * GET  ?action=overview    → { state, entries, actual, game1Runs, scoreboard }
+ * GET  ?action=overview    → { state, entries, actual, game1Runs, scoreboard, result }
  *                            (all entries, even before lock)
  * GET  ?action=pullActive  → { playerIds, unknown[], count } from MLB's active
  *                            roster, to pre-fill the picker. Nothing is saved.
@@ -20,13 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     if ($action === 'overview') {
         $store = read_store();
-        json_out([
-            'state'      => public_state($store),
-            'entries'    => sorted_by_submission($store['entries']),
-            'actual'     => $store['actual'],
-            'game1Runs'  => $store['game1Runs'],
-            'scoreboard' => $store['actual'] ? scoreboard($store['entries'], $store['actual'], $store['game1Runs']) : null,
-        ]);
+        json_out(array_merge([
+            'state'     => public_state($store),
+            'entries'   => sorted_by_submission($store['entries']),
+            'actual'    => $store['actual'],
+            'game1Runs' => $store['game1Runs'],
+        ], results_payload($store)));   // adds scoreboard + result
     }
 
     if ($action === 'pullActive') {

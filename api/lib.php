@@ -537,11 +537,17 @@ function parse_runs($value, string $whatForErrors): int
  *   tie-break 2  = earliest submission
  *
  * $game1Runs is null until the admin enters the Game 1 result (the roster
- * is announced before Game 1 is played). Until then tie-break 1 is skipped
- * and each row's runsDiff is null.
+ * is announced before Game 1 is played). Until then tie-break 1 can't be
+ * applied and each row's runsDiff is null.
  *
- * Because the tie-breaks end on a timestamp, every entry gets a distinct
- * rank. Each pick is marked hit: true/false, and each entry lists the actual
+ * Ranks (SPEC §6):
+ *   - Entries with a unique score get their own rank.
+ *   - Entries sharing a score, before the Game 1 result is in, SHARE a rank
+ *     and are flagged tied = true ("T-2"). They're still listed earliest
+ *     entry first, but that order isn't a result yet: the runs decide it.
+ *   - Once the result is in, every entry gets its own rank again.
+ *
+ * Each pick is marked hit: true/false, and each entry lists the actual
  * players it missed. Computed on every read, so fixing the actual roster
  * or the runs re-scores everyone.
  */
@@ -593,11 +599,92 @@ function scoreboard(array $entries, array $actual, ?int $game1Runs): array
            <=> [$a['score'], $diffForSort($b), submission_time($b)];
     });
 
+    // Count how many entries have each score, to spot ties.
+    $perScore = array_count_values(array_column($rows, 'score'));
+
     foreach ($rows as $i => &$row) {
-        $row['rank'] = $i + 1;
+        $sharesScore = $perScore[$row['score']] > 1;
+        if ($sharesScore && $game1Runs === null) {
+            // Unresolved tie: everyone in the group takes the rank of the
+            // group's first row. Rows are sorted, so that's the first row
+            // above with the same score (or this one).
+            $first = $i;
+            while ($first > 0 && $rows[$first - 1]['score'] === $row['score']) {
+                $first--;
+            }
+            $row['rank'] = $first + 1;
+            $row['tied'] = true;
+        } else {
+            $row['rank'] = $i + 1;
+            $row['tied'] = false;
+        }
     }
     unset($row);
     return $rows;
+}
+
+/**
+ * Who won, for the banner above the scoreboard (SPEC §6). $rows must come
+ * from scoreboard(). Returns null if there are no entries, otherwise:
+ *
+ *   status "winner"        one person has won. names = [winner].
+ *       decidedBy null     their score was the top on its own (no tie, so
+ *                          Game 1 never mattered)
+ *       decidedBy "runs"   tied on score; closest runs guess won
+ *       decidedBy "entry"  tied on score AND runs distance; earliest won
+ *   status "tiedForFirst"  top score is shared and the Game 1 result isn't
+ *                          in yet. names = everyone tied, earliest first.
+ *
+ * Also returns score, and for a winner their runsGuess and game1Runs, so the
+ * banner can say "guessed 9, actual 8".
+ */
+function scoreboard_result(array $rows, ?int $game1Runs): ?array
+{
+    if (count($rows) === 0) {
+        return null;
+    }
+    $top = $rows[0];
+    $topGroup = array_values(array_filter($rows, function ($r) use ($top) {
+        return $r['score'] === $top['score'];
+    }));
+
+    if (count($topGroup) > 1 && $game1Runs === null) {
+        return [
+            'status'    => 'tiedForFirst',
+            'names'     => array_column($topGroup, 'name'),
+            'score'     => $top['score'],
+            'decidedBy' => null,
+        ];
+    }
+
+    $decidedBy = null;
+    if (count($topGroup) > 1) {
+        // Rows are already sorted by runs distance then entry time, so the
+        // winner is $top; compare with the runner-up to see which one decided.
+        $decidedBy = ($top['runsDiff'] !== $topGroup[1]['runsDiff']) ? 'runs' : 'entry';
+    }
+    return [
+        'status'    => 'winner',
+        'names'     => [$top['name']],
+        'score'     => $top['score'],
+        'decidedBy' => $decidedBy,
+        'runsGuess' => $top['runsGuess'] ?? null,
+        'game1Runs' => $game1Runs,
+    ];
+}
+
+/**
+ * Everything the results views need once the actual roster exists:
+ * { scoreboard: rows, result: summary }. Both are null before that.
+ * Shared by entries.php (public, after lock) and admin.php.
+ */
+function results_payload(array $store): array
+{
+    if ($store['actual'] === null) {
+        return ['scoreboard' => null, 'result' => null];
+    }
+    $rows = scoreboard($store['entries'], $store['actual'], $store['game1Runs']);
+    return ['scoreboard' => $rows, 'result' => scoreboard_result($rows, $store['game1Runs'])];
 }
 
 // ---------------------------------------------------------------------------
