@@ -11,6 +11,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Closest guess wins a tie, then earliest entry. The admin page has a new
   "Game 1 total runs" box to enter the result after the game.
 
+### Fixed
+- After an update, browsers could keep running old JavaScript/CSS for up to
+  8 days (the host's default caching), e.g. the admin page not showing runs
+  guesses. CSS/JS now carry a `?v=` version tag and are served with
+  `Cache-Control: no-cache`.
+
 ### Added
 - MLB's 13-pitcher postseason limit: the picker won't add a 14th pitcher and
   says why, the rules explain it (Ohtani counts as a two-way/position

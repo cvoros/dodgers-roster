@@ -61,6 +61,18 @@ data/               runtime data — gitignored except data/.htaccess
   `Resolves` (those auto-close; closing is Chris's call).
 - Don't push without being asked.
 
+## Deploying (cache-busting)
+
+- Chris deploys by uploading a zip built with:
+  `git archive --format=zip -o ~/Downloads/baseball-deploy.zip develop .htaccess index.html admin.html css js api data`
+  (never includes `api/config.php`).
+- Namecheap serves CSS/JS with an 8-day browser cache. `.htaccess` switches
+  them to `no-cache`, and every `<link>`/`<script>` tag carries `?v=<date>`.
+  **Whenever a deploy changes anything in `css/` or `js/`, bump `?v=` on all
+  tags in both `index.html` and `admin.html`** (use the date, add a letter
+  for a second deploy the same day). Otherwise browsers can run old scripts
+  against new pages.
+
 ## CHANGELOG.md
 
 - Keep a Changelog format (`## [Unreleased]`, then `### Added / Changed /

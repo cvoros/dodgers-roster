@@ -15,7 +15,10 @@
        (The .htaccess in this folder sends the same instruction as a header.) -->
   <meta name="robots" content="noindex, nofollow">
   <title>NLDS Roster Challenge</title>
-  <link rel="stylesheet" href="css/style.css">
+  <!-- ?v= is a cache-buster: the host tells browsers to keep CSS/JS for
+       days, so change it on every deploy that touches css/ or js/ (all
+       tags, both pages) and browsers fetch the new files immediately. -->
+  <link rel="stylesheet" href="css/style.css?v=2026-09-23">
 </head>
 <body>
   <header class="site-header">
@@ -126,7 +129,7 @@
     </div>
   </dialog>
 
-  <script src="js/common.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/common.js?v=2026-09-23"></script>
+  <script src="js/app.js?v=2026-09-23"></script>
 </body>
 </html>
