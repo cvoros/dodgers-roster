@@ -5,6 +5,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-23
+
 ### Added
 - Results now name the winner. A banner says who won as soon as the real
   roster is saved if nobody is tied for first, without waiting for Game 1. If
@@ -56,5 +58,6 @@ First release, deployed at qxnllc.com/baseball.
   an update (the host's default is an 8-day cache).
 - SPEC.md, CLAUDE.md, and a README with local run and cPanel deployment steps.
 
-[Unreleased]: https://github.com/cvoros/dodgers-roster/compare/v0.1.0...develop
+[Unreleased]: https://github.com/cvoros/dodgers-roster/compare/v0.1.1...develop
+[0.1.1]: https://github.com/cvoros/dodgers-roster/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/cvoros/dodgers-roster/releases/tag/v0.1.0
