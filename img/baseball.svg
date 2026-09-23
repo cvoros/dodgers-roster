@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!--
+    baseball.svg — the site's icon: a baseball in the style of the ⚾ emoji.
+    Original drawing (emoji fonts' artwork belongs to their vendors).
+    Used directly as the browser-tab icon, and rendered to the PNGs in this
+    folder (favicon-32, apple-touch-icon, og-image). If you change it,
+    re-render those too (see CLAUDE.md "Icons and social card").
+  -->
+  <defs>
+    <!-- Soft light from the upper left so the ball looks round -->
+    <radialGradient id="leather" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.7" stop-color="#eeeae2"/>
+      <stop offset="1" stop-color="#d6d0c3"/>
+    </radialGradient>
+    <!-- Keeps the seams inside the ball -->
+    <clipPath id="ball"><circle cx="50" cy="50" r="45"/></clipPath>
+  </defs>
+
+  <circle cx="50" cy="50" r="46" fill="url(#leather)" stroke="#c9c2b3" stroke-width="2"/>
+
+  <g clip-path="url(#ball)" fill="none" stroke="#d63a3a" stroke-linecap="round">
+    <!-- The two curved seams, bowing toward the middle like the emoji -->
+    <path id="left" d="M 20 10 C 40 32, 40 68, 20 90" stroke-width="2.2"/>
+    <path id="right" d="M 80 10 C 60 32, 60 68, 80 90" stroke-width="2.2"/>
+    <!-- Stitches: a wide, dashed copy of each seam draws short bars
+         across it at even spacing -->
+    <path d="M 20 10 C 40 32, 40 68, 20 90" stroke-width="9" stroke-dasharray="1.8 5.2" stroke-linecap="butt"/>
+    <path d="M 80 10 C 60 32, 60 68, 80 90" stroke-width="9" stroke-dasharray="1.8 5.2" stroke-linecap="butt"/>
+  </g>
+</svg>

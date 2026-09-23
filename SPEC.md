@@ -124,6 +124,12 @@ entries are scored and ranked.
    Usability floors that override the delayDay look: 16px text/inputs,
    44px tap targets, informational text at ≥ 4.5:1 contrast, and one filled
    primary button per screen.
+10. **Icon and link preview.** A baseball (original drawing in the style of
+    the ⚾ emoji, `img/baseball.svg`) is the browser-tab icon and the iPhone
+    home-screen icon. Sharing the link shows a social card: the baseball on
+    the site's navy with the Dodger-blue top stripe, plus the title
+    "nldsRoster: Dodgers 2026 NLDS roster challenge" and a one-line
+    description (Open Graph + Twitter card tags in `index.html`).
 
 ## 5. Server-side validation (submit)
 

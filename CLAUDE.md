@@ -64,7 +64,7 @@ data/               runtime data — gitignored except data/.htaccess
 ## Deploying (cache-busting)
 
 - Chris deploys by uploading a zip built with:
-  `git archive --format=zip -o ~/Downloads/baseball-deploy.zip develop .htaccess index.html admin.html css js api data`
+  `git archive --format=zip -o ~/Downloads/baseball-deploy.zip develop .htaccess index.html admin.html css js img api data`
   (never includes `api/config.php`).
 - Namecheap serves CSS/JS with an 8-day browser cache. `.htaccess` switches
   them to `no-cache`, and every `<link>`/`<script>` tag carries `?v=<date>`.
@@ -72,6 +72,23 @@ data/               runtime data — gitignored except data/.htaccess
   tags in both `index.html` and `admin.html`** (use the date, add a letter
   for a second deploy the same day). Otherwise browsers can run old scripts
   against new pages.
+
+## Icons and social card
+
+- `img/baseball.svg` is the one source drawing (original art in the style
+  of the ⚾ emoji; don't copy emoji-font artwork, it belongs to its vendor).
+  The browser tab uses it directly.
+- `img/favicon-32.png`, `img/apple-touch-icon.png` (180×180, navy
+  background because iOS turns transparency black) and `img/og-image.png`
+  (1200×630 social card) are rendered from it with headless Chrome. If the
+  SVG changes, re-render all three: wrap the SVG in a sized HTML page and
+  run `chrome --headless=new --hide-scrollbars --window-size=W,H
+  --screenshot=out.png page.html` (add
+  `--default-background-color=00000000` for the transparent favicon).
+- The social-card tags in `index.html` use absolute URLs
+  (`https://qxnllc.com/baseball/...`), because link-preview crawlers need
+  them. Update them if the site ever moves. Apps like iMessage and Slack
+  cache previews, so a changed og-image may take a while to show up.
 
 ## CHANGELOG.md
 

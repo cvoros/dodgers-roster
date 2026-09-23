@@ -10,6 +10,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   roster is saved if nobody is tied for first, without waiting for Game 1. If
   there's a tie for first, it lists who's tied and says Game 1 runs will
   decide it. Once decided, it says how (tie-breaker guess, or earlier entry).
+- Baseball icon (in the style of the ⚾ emoji) for browser tabs and iPhone
+  home screens, and a social card so shared links show the baseball with a
+  title and description.
 
 ### Changed
 - New look based on delayDay: `nldsRoster` wordmark, deeper navy palette,
