@@ -1,0 +1,14 @@
+# .htaccess — for the folder the game is installed in (e.g. public_html/baseball).
+#
+# Tell search engines not to index or follow ANYTHING in this folder: the
+# pages, the JSON API, the CSS/JS. This is a private game living on a company
+# website, so it shouldn't show up in Google.
+#
+# Why a header instead of robots.txt: robots.txt lives at the site root (it
+# belongs to the company site, not this game), and "Disallow" only stops
+# crawling, not indexing — a blocked URL can still appear in results if
+# something links to it. The X-Robots-Tag header says "don't index" outright.
+# index.html and admin.html also carry a <meta name="robots"> tag as backup.
+<IfModule mod_headers.c>
+    Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>

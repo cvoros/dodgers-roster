@@ -12,6 +12,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   "Game 1 total runs" box to enter the result after the game.
 
 ### Added
+- Pages and API are marked "noindex, nofollow" (meta tag, `.htaccess`
+  header, and PHP header) so the game stays out of search results on the
+  company domain. See #1.
 - SPEC.md and CLAUDE.md describing the game and project conventions.
 - PHP JSON API: cached 40-man roster proxy (MLB Stats API, team 119), game
   state, name check, submit, post-lock entries, and admin actions. Storage is a

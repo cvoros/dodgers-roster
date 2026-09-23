@@ -24,6 +24,9 @@
 header('Content-Type: application/json; charset=utf-8');
 // Never let a browser or proxy cache API answers: lock state and entries change.
 header('Cache-Control: no-store');
+// Keep API responses out of search engines (see the folder's .htaccess; this
+// covers hosts where mod_headers is off).
+header('X-Robots-Tag: noindex, nofollow');
 
 // The real config holds the admin key and is gitignored. If it's missing the
 // site was deployed without it — say so clearly instead of failing obscurely.

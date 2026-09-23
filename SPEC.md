@@ -14,6 +14,12 @@ entries are scored and ranked.
   swapped later.)
 - **Hosting:** Namecheap shared hosting via cPanel. Deploy = upload files.
 - **Repo:** `github.com/cvoros/dodgers-roster` (public).
+- **Not in search engines.** The game shares a domain with a company website
+  (qxnllc.com/baseball), so nothing in its folder may be indexed: an
+  `.htaccess` sends `X-Robots-Tag: noindex, nofollow` for every file, the
+  API also sends it from PHP, and both HTML pages carry
+  `<meta name="robots" content="noindex, nofollow">`. The site-root
+  robots.txt belongs to the company site and is not touched.
 
 ## 2. Secrets & data — never committed
 
