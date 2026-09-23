@@ -50,6 +50,7 @@ async function init() {
     poolEl: $('pool'),
     slotsEl: $('slots'),
     countEl: $('pick-count'),
+    messageEl: $('pick-message'),
     onChange: () => { $('save-actual').disabled = !picker.isFull(); },
   });
   // Pre-fill the picker with the saved actual roster, if there is one.

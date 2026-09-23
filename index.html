@@ -42,6 +42,8 @@
       <ol>
         <li>Pick the <strong>26 players</strong> you think make the Dodgers' NLDS roster.</li>
         <li>Tap a player to add them. Tap a roster slot to take them off.</li>
+        <li>MLB rule: <strong>no more than 13 pitchers</strong>. Shohei Ohtani is a two-way player
+          (<strong>TWP</strong>), so he counts as a position player, not a pitcher.</li>
         <li>Guess the <strong>total runs scored in Game 1</strong> (both teams combined) as a tie-breaker.</li>
         <li>Press <strong>Play Ball</strong> when you have 26. <strong>Entries are final</strong> once confirmed.</li>
       </ol>
@@ -87,6 +89,8 @@
             </div>
             <button id="play-ball" type="button" class="btn primary" disabled>Play Ball</button>
           </div>
+          <!-- "Max 13 pitchers" / "Roster full" when a tap is refused -->
+          <p id="pick-message" class="pick-message" aria-live="polite"></p>
           <button id="toggle-slots" type="button" class="link-btn toggle-slots" aria-expanded="false">Show my roster ▾</button>
           <div id="slots" class="slots"></div>
         </aside>

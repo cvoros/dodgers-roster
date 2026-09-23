@@ -185,6 +185,7 @@ async function showPicker() {
       poolEl: $('pool'),
       slotsEl: $('slots'),
       countEl: $('pick-count'),
+      messageEl: $('pick-message'),
       onChange: onPicksChanged,
     });
     const draft = loadJson(DRAFT_KEY);

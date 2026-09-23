@@ -17,6 +17,14 @@
 /** Size of the roster being predicted. Must match ROSTER_SIZE in api/lib.php. */
 const ROSTER_SIZE = 26;
 
+/**
+ * MLB rule: at most 13 pitchers on a postseason roster. Two-way players
+ * (Ohtani, "TWP") don't count; they're in the Position Players group, so
+ * counting the 'P' group is exactly right. Must match MAX_PITCHERS in
+ * api/lib.php, which enforces it on the server.
+ */
+const MAX_PITCHERS = 13;
+
 // ---------------------------------------------------------------------------
 // API
 // ---------------------------------------------------------------------------
@@ -135,23 +143,28 @@ function formatCountdown(ms) {
  *   - tap a pool player  → added to the next open slot of their group
  *   - tap a filled slot  → removed, player returns to the pool
  *   - tapping a picked player in the pool also removes them (a natural undo)
- *   - total is capped at 26; the P / POS split is up to the user
+ *   - total is capped at 26, and pitchers at 13 (MLB rule, SPEC §3);
+ *     otherwise the P / POS split is up to the user
+ *   - a tap that would break a limit is refused with a short message
  *
  * Usage:
  *   const picker = new RosterPicker({
  *     players,                    // from api/roster.php
  *     poolEl, slotsEl, countEl,   // containers to render into
+ *     messageEl,                  // optional: where "can't add" messages go
  *     onChange(picker) { ... },   // called after every add/remove
  *   });
  *   picker.getIds(); picker.setIds([...]); picker.pitcherCount();
  */
 class RosterPicker {
-  constructor({ players, poolEl, slotsEl, countEl, onChange }) {
+  constructor({ players, poolEl, slotsEl, countEl, messageEl, onChange }) {
     this.players = players;
     this.byId = new Map(players.map((p) => [p.id, p]));
     this.poolEl = poolEl;
     this.slotsEl = slotsEl;
     this.countEl = countEl;
+    this.messageEl = messageEl || null;
+    this.messageTimer = null;
     this.onChange = onChange || (() => {});
     // Picked player ids in the order they were picked (so "next open slot"
     // really is the next one down the list).
@@ -165,13 +178,15 @@ class RosterPicker {
   }
 
   /**
-   * Replace the picks (e.g. restoring a saved draft). Ids that aren't in the
-   * pool — say a player was dropped from the 40-man — are silently skipped.
+   * Replace the picks (e.g. restoring a saved draft). Ids that can't be
+   * added are silently skipped: players no longer in the pool (dropped from
+   * the 40-man), duplicates, and anything past the 26 / 13-pitcher limits
+   * (e.g. a draft saved before the pitcher limit existed).
    */
   setIds(ids) {
     this.picked = [];
     for (const id of ids) {
-      if (this.byId.has(id) && !this.picked.includes(id) && this.picked.length < ROSTER_SIZE) {
+      if (this.byId.has(id) && !this.picked.includes(id) && this.whyCantAdd(id) === null) {
         this.picked.push(id);
       }
     }
@@ -191,16 +206,38 @@ class RosterPicker {
     return this.picked.length >= ROSTER_SIZE;
   }
 
+  /** True when the 13-pitcher limit is reached. */
+  pitchersFull() {
+    return this.pitcherCount() >= MAX_PITCHERS;
+  }
+
+  /**
+   * Why this (unpicked) player can't be added right now, as a message for
+   * the user — or null if they can.
+   */
+  whyCantAdd(id) {
+    if (this.isFull()) {
+      return 'Roster full (' + ROSTER_SIZE + '). Tap a player in your roster to remove them first.';
+    }
+    if (this.byId.get(id).group === 'P' && this.pitchersFull()) {
+      return 'MLB rule: max ' + MAX_PITCHERS + ' pitchers. Remove a pitcher to swap in another.';
+    }
+    return null;
+  }
+
   /** Add or remove a player — the pool's tap handler. */
   toggle(id) {
     if (this.picked.includes(id)) {
       this.remove(id);
-    } else if (this.isFull()) {
-      this.flashFull();
-    } else {
-      this.picked.push(id);
-      this.changed();
+      return;
     }
+    const problem = this.whyCantAdd(id);
+    if (problem !== null) {
+      this.refuse(problem);
+      return;
+    }
+    this.picked.push(id);
+    this.changed();
   }
 
   remove(id) {
@@ -210,16 +247,31 @@ class RosterPicker {
 
   /** Re-render and notify the page after any change. */
   changed() {
+    this.showMessage('');   // any "can't add" message is out of date now
     this.render();
     this.onChange(this);
   }
 
-  /** Briefly highlight the count when someone taps while the roster is full. */
-  flashFull() {
+  /**
+   * A tap was refused (roster full, or pitcher limit). Flash the count and
+   * say why, so it doesn't look like the tap just didn't register.
+   */
+  refuse(message) {
     this.countEl.classList.remove('flash');
     // Reading offsetWidth forces a reflow so the CSS animation restarts.
     void this.countEl.offsetWidth;
     this.countEl.classList.add('flash');
+    this.showMessage(message);
+  }
+
+  /** Show a message in messageEl for a few seconds ('' clears it). */
+  showMessage(message) {
+    if (!this.messageEl) return;
+    this.messageEl.textContent = message;
+    clearTimeout(this.messageTimer);
+    if (message) {
+      this.messageTimer = setTimeout(() => { this.messageEl.textContent = ''; }, 4000);
+    }
   }
 
   render() {
@@ -228,7 +280,7 @@ class RosterPicker {
     this.renderSlots();
   }
 
-  /** "14 P / 12 POS · 26 / 26" */
+  /** "13 P / 13 POS · 26 / 26" */
   renderCount() {
     const pitchers = this.pitcherCount();
     const positions = this.picked.length - pitchers;
@@ -247,9 +299,12 @@ class RosterPicker {
       const inGroup = this.players.filter((p) => p.group === group);
       const buttons = inGroup.map((player) => {
         const isPicked = this.picked.includes(player.id);
+        // Dim unpicked players who can't be added right now (limit reached).
+        // Still tappable, so the tap can explain why.
+        const blocked = !isPicked && this.whyCantAdd(player.id) !== null;
         return el('button', {
           type: 'button',
-          className: 'pool-player' + (isPicked ? ' picked' : ''),
+          className: 'pool-player' + (isPicked ? ' picked' : '') + (blocked ? ' blocked' : ''),
           onclick: () => this.toggle(player.id),
           'aria-pressed': String(isPicked),
         }, [
@@ -257,8 +312,10 @@ class RosterPicker {
           statusTag(player.status),
         ]);
       });
+      // Pitchers heading carries the rule, so it's visible while picking.
+      const note = group === 'P' ? ' · max ' + MAX_PITCHERS + ' on roster' : '';
       return el('section', { className: 'pool-group' }, [
-        el('h3', {}, [title + ' (' + inGroup.length + ')']),
+        el('h3', {}, [title + ' (' + inGroup.length + ')' + note]),
         el('div', { className: 'pool-list' }, buttons),
       ]);
     });
@@ -284,12 +341,17 @@ class RosterPicker {
           el('span', { className: 'label', textContent: player.label }),
           el('span', { className: 'remove', 'aria-hidden': 'true', textContent: '×' }),
         ]));
-      // One dashed "open slot" per group while there's room left.
-      if (!this.isFull()) {
+      // One dashed "open slot" per group while that group can still grow.
+      const groupFull = this.isFull() || (group === 'P' && this.pitchersFull());
+      if (!groupFull) {
         slots.push(el('div', { className: 'slot open' }, [hint]));
       }
+      // "Pitchers (12 of 13 max)" vs "Position Players (13)"
+      const countText = group === 'P'
+        ? players.length + ' of ' + MAX_PITCHERS + ' max'
+        : String(players.length);
       return el('section', { className: 'slot-group' }, [
-        el('h3', {}, [title + ' (' + players.length + ')']),
+        el('h3', {}, [title + ' (' + countText + ')']),
         el('div', { className: 'slot-list' }, slots),
       ]);
     });

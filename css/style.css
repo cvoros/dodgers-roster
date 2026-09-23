@@ -247,6 +247,14 @@ input[type="text"] {
 }
 .pool-player.picked .label::before { content: "✓ "; color: var(--hit); }
 
+/* Can't be added right now (26 picked, or 13 pitchers). Faded but still
+   tappable, so the tap can explain why in .pick-message. */
+.pool-player.blocked { opacity: 0.45; }
+
+/* Short "why that tap didn't work" note under the count. Empty = no space. */
+.pick-message { margin: 0; font-size: 0.85rem; color: var(--miss); }
+.pick-message:not(:empty) { margin-top: 6px; }
+
 .status-tag {
   font-size: 0.72rem;
   padding: 2px 6px;

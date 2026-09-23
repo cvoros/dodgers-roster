@@ -12,6 +12,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   "Game 1 total runs" box to enter the result after the game.
 
 ### Added
+- MLB's 13-pitcher postseason limit: the picker won't add a 14th pitcher and
+  says why, the rules explain it (Ohtani counts as a two-way/position
+  player), and the server rejects rosters over the limit. See #2.
 - Pages and API are marked "noindex, nofollow" (meta tag, `.htaccess`
   header, and PHP header) so the game stays out of search results on the
   company domain. See #1.

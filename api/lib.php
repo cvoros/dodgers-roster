@@ -45,6 +45,12 @@ const ROSTER_SIZE = 26;
 // Dodgers team id in the MLB Stats API.
 const MLB_TEAM_ID = 119;
 
+// MLB rule: a postseason roster may carry at most 13 pitchers. Designated
+// two-way players (Ohtani, "TWP") don't count — they're grouped as position
+// players (see normalize_player), so counting group "P" is exactly right.
+// Must match MAX_PITCHERS in js/common.js.
+const MAX_PITCHERS = 13;
+
 // Highest allowed Game 1 total-runs number (tie-breaker). Generous: the
 // postseason record for one game is well under this.
 const MAX_RUNS = 99;
@@ -490,6 +496,11 @@ function build_roster($playerIds): array
         if ($player['group'] === 'P') {
             $pitcherCount++;
         }
+    }
+    // MLB roster rule (SPEC §3). Applies to the admin's actual roster too,
+    // since it goes through this same function.
+    if ($pitcherCount > MAX_PITCHERS) {
+        json_error('MLB rules allow at most ' . MAX_PITCHERS . ' pitchers (this roster has ' . $pitcherCount . ').');
     }
     return ['picks' => $picks, 'pitcherCount' => $pitcherCount];
 }

@@ -53,6 +53,12 @@ entries are scored and ranked.
   Players. **Two-way players (`TWP`, i.e. Shohei Ohtani)** go in Position
   Players, displayed `Shohei Ohtani TWP, L`. The admin picker uses the same
   rule, so pitcher counts mean the same thing on both sides.
+- **MLB roster rule: at most 13 pitchers** on a postseason roster (in force
+  since 2020). Qualifying two-way players don't count toward it, which is
+  exactly what the grouping above does: Ohtani is `TWP`, a position player.
+  There is no other composition rule that matters here (26 total with ≤ 13
+  pitchers means ≥ 13 position players). Enforced in the picker and on the
+  server, for players' entries and the admin's actual roster alike.
 - Lists are sorted alphabetically by last name within each group.
 - Non-active players (e.g. "Injured 60-Day", "Reassigned to Minors") carry a
   small status tag in the pool. It's shown for information only, and they can
@@ -70,12 +76,17 @@ entries are scored and ranked.
 3. **Picker.**
    - Left: player pool, two sections — Pitchers / Position Players.
    - Right: 26 slots split into a Pitchers group and a Position Players group,
-     with a live count like **"14 P / 12 POS · 26 / 26"**. The split is free —
-     the player decides how many pitchers — only the total is capped at 26.
+     with a live count like **"13 P / 13 POS · 26 / 26"**. The split is up to
+     the player, within the limits: 26 total, at most 13 pitchers. The
+     Pitchers group heading reads e.g. "Pitchers (12 of 13 max)".
    - Tap a pool player → moves into the next open slot of their group (and is
      greyed out / hidden in the pool). Tap a filled slot → removes it and the
-     player returns to the pool. When 26 are picked, pool taps are ignored with
-     a brief "roster full" hint.
+     player returns to the pool. Players who can't be added right now (26
+     picked, or 13 pitchers picked) are dimmed; tapping one flashes the count
+     and shows a short reason under it ("MLB rule: max 13 pitchers. Remove a
+     pitcher to swap in another." / "Roster full…").
+   - The instructions state the 13-pitcher rule and that Ohtani (TWP) counts
+     as a position player.
    - **Mobile:** below ~700px wide the layout stacks — roster summary is a
      sticky bar at the top (count + expandable slot list), pool below. Tap
      targets ≥ 44px. No drag-and-drop, no hover-dependent UI.
@@ -108,6 +119,7 @@ Reject with a specific error unless all hold:
 - Now is before `LOCK_AT` (server clock, `TIMEZONE`).
 - Name valid and not already taken (case-insensitive), checked under the lock.
 - Exactly 26 player ids, no duplicates, every id on the current (cached) 40-man.
+- At most 13 of them are pitchers (group `P`).
 - `runsGuess` is a whole number 0–99 (JSON number or digit string; anything
   else, including `true`, is rejected).
 - Pitcher count is **recomputed server-side** from the ids; the client's value
