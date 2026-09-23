@@ -116,6 +116,14 @@ entries are scored and ranked.
    dark cards, Dodger-blue header) for every visitor, regardless of the
    device's light/dark setting. There is no light theme. The pages declare
    `color-scheme: dark` so the browser's own controls match.
+   The look follows Chris's delayDay app: near-black navy palette, an
+   `nldsRoster` monospace wordmark (Dodger-blue accent, slim blue top
+   stripe), small uppercase monospace section labels, monospace for
+   counts/times/scores, outlined buttons. Fonts are built-in only (no
+   downloads): system UI font for text, the device's monospace for labels.
+   Usability floors that override the delayDay look: 16px text/inputs,
+   44px tap targets, informational text at ≥ 4.5:1 contrast, and one filled
+   primary button per screen.
 
 ## 5. Server-side validation (submit)
 

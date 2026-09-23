@@ -12,6 +12,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   decide it. Once decided, it says how (tie-breaker guess, or earlier entry).
 
 ### Changed
+- New look based on delayDay: `nldsRoster` wordmark, deeper navy palette,
+  monospace labels, counts and scores, and outlined buttons with one blue
+  primary button per screen. Uses the devices' built-in fonts, with no
+  downloads. Text sizes, tap targets, and contrast kept phone-friendly.
 - The site is always dark for everyone. Before, it followed each device's
   light/dark setting, and the light version was a stark white.
 - Tied entries share a rank ("T-2") until the Game 1 runs are entered.
