@@ -2,7 +2,7 @@
 
 A small game for friends: predict the Dodgers' 2026 NLDS 26-man roster from
 the 40-man roster. Picks lock at a set time. After that, everyone's picks are
-revealed and scored against the real roster.
+revealed and scored against the real roster. https://qxnllc.com/baseball
 
 - Player page: `index.html`
 - Admin page: `admin.html?key=<ADMIN_KEY>`
