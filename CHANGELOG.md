@@ -5,6 +5,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- The pick count no longer wraps mid-number on phones ("… 26 /" then
+  "26"). It now shows "13 P / 13 POS" with "Total: 26 / 26" on its own
+  line, and Play Ball stays on one line. See #3.
+
 ## [0.1.1] - 2026-09-23
 
 ### Added
