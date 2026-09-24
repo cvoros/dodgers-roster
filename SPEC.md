@@ -76,7 +76,7 @@ entries are scored and ranked.
 3. **Picker.**
    - Left: player pool, two sections — Pitchers / Position Players.
    - Right: 26 slots split into a Pitchers group and a Position Players group,
-     with a live count like **"13 P / 13 POS · 26 / 26"**. The split is up to
+     with a live count on two lines, **"13 P / 13 POS"** over **"Total: 26 / 26"** (never wraps mid-number on phones). The split is up to
      the player, within the limits: 26 total, at most 13 pitchers. The
      Pitchers group heading reads e.g. "Pitchers (12 of 13 max)".
    - Tap a pool player → moves into the next open slot of their group (and is

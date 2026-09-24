@@ -5,6 +5,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-24
+
+### Fixed
+- The pick count no longer wraps mid-number on phones ("… 26 /" then
+  "26"). It now shows "13 P / 13 POS" with "Total: 26 / 26" on its own
+  line, and Play Ball stays on one line. See #3.
+
 ## [0.1.1] - 2026-09-23
 
 ### Added
@@ -58,6 +65,7 @@ First release, deployed at qxnllc.com/baseball.
   an update (the host's default is an 8-day cache).
 - SPEC.md, CLAUDE.md, and a README with local run and cPanel deployment steps.
 
-[Unreleased]: https://github.com/cvoros/dodgers-roster/compare/v0.1.1...develop
+[Unreleased]: https://github.com/cvoros/dodgers-roster/compare/v0.1.2...develop
+[0.1.2]: https://github.com/cvoros/dodgers-roster/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/cvoros/dodgers-roster/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/cvoros/dodgers-roster/releases/tag/v0.1.0

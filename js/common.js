@@ -280,12 +280,18 @@ class RosterPicker {
     this.renderSlots();
   }
 
-  /** "13 P / 13 POS · 26 / 26" */
+  /**
+   * Two lines, so it never wraps mid-number on a phone (issue #3):
+   *   13 P / 13 POS
+   *   Total: 26 / 26
+   */
   renderCount() {
     const pitchers = this.pitcherCount();
     const positions = this.picked.length - pitchers;
-    this.countEl.textContent =
-      pitchers + ' P / ' + positions + ' POS · ' + this.picked.length + ' / ' + ROSTER_SIZE;
+    this.countEl.replaceChildren(
+      el('span', { className: 'count-split', textContent: pitchers + ' P / ' + positions + ' POS' }),
+      el('span', { className: 'count-total', textContent: 'Total: ' + this.picked.length + ' / ' + ROSTER_SIZE }),
+    );
     this.countEl.classList.toggle('complete', this.isFull());
   }
 
